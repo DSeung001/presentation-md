@@ -2,7 +2,6 @@
 
 Markdown으로 본문을 쓰고, 웹에서 **스크롤 문서** 또는 **슬라이드**로 보는 MVP입니다.
 
-- 저장소: https://github.com/DSeung001/presentation-md
 - 사이트: https://dseung001.github.io/presentation-md/
 
 ## 로컬 실행
