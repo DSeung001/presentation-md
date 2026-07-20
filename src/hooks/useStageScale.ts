@@ -20,12 +20,9 @@ function getPadding(stage: HTMLElement) {
   }
 }
 
-type ViewMode = 'scroll' | 'slides'
-
 export function useStageScale(
   stageRef: RefObject<HTMLElement | null>,
   fullscreen: boolean,
-  mode: ViewMode,
   reservedRef?: RefObject<HTMLElement | null>,
   contentRevision?: unknown,
 ) {
@@ -55,12 +52,10 @@ export function useStageScale(
     const availH = stage.clientHeight - pad.y - reservedH
     const scaleW = availW / base.w
     const scaleH = availH / base.h
-    const next =
-      mode === 'slides'
-        ? Math.min(scaleW, MAX_SCALE)
-        : Math.min(scaleW, scaleH, MAX_SCALE)
+    // 슬라이드도 가로·세로 모두 맞춰야 상단 header가 잘리지 않는다.
+    const next = Math.min(scaleW, scaleH, MAX_SCALE)
     setScale(next > 1 ? next : 1)
-  }, [stageRef, fullscreen, mode, reservedRef])
+  }, [stageRef, fullscreen, reservedRef])
 
   useLayoutEffect(() => {
     if (!fullscreen) {

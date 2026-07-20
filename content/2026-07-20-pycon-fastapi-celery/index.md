@@ -31,6 +31,19 @@ PyCon 2026 핸즈온 튜토리얼
 
 ---
 
+
+<header>HLS</header>
+
+![HLS](./hls.webp)
+
+---
+
+<header>비동기 작업</header>
+
+![Async](./async.webp)
+
+---
+
 <header>구성할 시스템</header>
 
 프로젝트 전체 구상도

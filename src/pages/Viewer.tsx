@@ -16,16 +16,18 @@ export default function Viewer() {
   const mode: ViewMode = viewParam === 'slides' ? 'slides' : 'scroll'
   const [index, setIndex] = useState(0)
   const [exporting, setExporting] = useState(false)
+  const [navHint, setNavHint] = useState(false)
   const stageRef = useRef<HTMLElement>(null)
   const slideNavRef = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLElement>(null)
+  const navHintTimerRef = useRef<number | null>(null)
   const { active: fullscreen, toggle: toggleFullscreen } =
     useFullscreen(stageRef)
+  // 전체보기 네비는 absolute라 하단 padding으로만 여백을 확보한다.
   const { captureBaseSize, innerRef, hostStyle, innerStyle } = useStageScale(
     stageRef,
     fullscreen,
-    mode,
-    mode === 'slides' ? slideNavRef : undefined,
+    undefined,
     mode === 'slides' ? index : slug,
   )
 
@@ -41,6 +43,31 @@ export default function Viewer() {
   useEffect(() => {
     setIndex(0)
   }, [slug, mode])
+
+  useEffect(() => {
+    if (navHintTimerRef.current != null) {
+      window.clearTimeout(navHintTimerRef.current)
+      navHintTimerRef.current = null
+    }
+
+    if (!fullscreen || mode !== 'slides') {
+      setNavHint(false)
+      return
+    }
+
+    setNavHint(true)
+    navHintTimerRef.current = window.setTimeout(() => {
+      setNavHint(false)
+      navHintTimerRef.current = null
+    }, 1400)
+
+    return () => {
+      if (navHintTimerRef.current != null) {
+        window.clearTimeout(navHintTimerRef.current)
+        navHintTimerRef.current = null
+      }
+    }
+  }, [index, fullscreen, mode])
 
   useEffect(() => {
     const content = contentRef.current
@@ -219,15 +246,18 @@ export default function Viewer() {
         {mode === 'slides' ? (
           <nav
             ref={slideNavRef}
-            className="slide-nav"
+            className={`slide-nav${fullscreen && navHint ? ' slide-nav--hint' : ''}`}
             aria-label="슬라이드 탐색"
+            aria-hidden={fullscreen && !navHint ? true : undefined}
           >
             <button
               type="button"
               onClick={() => go(-1)}
               disabled={index === 0}
+              aria-label="이전 슬라이드"
+              tabIndex={fullscreen && !navHint ? -1 : undefined}
             >
-              이전
+              {fullscreen ? '←' : '이전'}
             </button>
             <span className="slide-counter">
               {index + 1} / {total}
@@ -236,8 +266,10 @@ export default function Viewer() {
               type="button"
               onClick={() => go(1)}
               disabled={index >= total - 1}
+              aria-label="다음 슬라이드"
+              tabIndex={fullscreen && !navHint ? -1 : undefined}
             >
-              다음
+              {fullscreen ? '→' : '다음'}
             </button>
           </nav>
         ) : null}

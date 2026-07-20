@@ -112,7 +112,10 @@ function wrapSlideHeader(html: string): string {
   const template = document.createElement('template')
   template.innerHTML = html
 
-  const header = template.content.querySelector(':scope > header')
+  // DocumentFragment에서는 :scope 매칭이 불안정하므로 직접 자식을 검사한다.
+  const header = Array.from(template.content.children).find(
+    (el) => el.tagName === 'HEADER',
+  )
   if (!header) return html
 
   const body = document.createElement('div')

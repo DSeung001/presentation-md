@@ -276,9 +276,9 @@ a:hover {
   background: #000;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+  align-items: safe center;
+  justify-content: safe center;
+  padding: 0.75rem;
   overflow: auto;
   position: relative;
 }
@@ -308,26 +308,48 @@ a:hover {
   height: 100%;
   box-sizing: border-box;
 }
+
 .viewer-stage:fullscreen .slide-nav,
 .viewer-stage--fullscreen:fullscreen .slide-nav {
   position: absolute;
-  bottom: 1.5rem;
+  bottom: 0.65rem;
   left: 0;
   right: 0;
+  z-index: 2;
   flex-shrink: 0;
+  gap: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.viewer-stage:fullscreen .slide-nav.slide-nav--hint,
+.viewer-stage--fullscreen:fullscreen .slide-nav.slide-nav--hint {
+  opacity: 1;
+}
+
+.viewer-stage:fullscreen .slide-nav.slide-nav--hint button,
+.viewer-stage:fullscreen .slide-nav.slide-nav--hint .slide-counter,
+.viewer-stage--fullscreen:fullscreen .slide-nav.slide-nav--hint button,
+.viewer-stage--fullscreen:fullscreen .slide-nav.slide-nav--hint .slide-counter {
+  pointer-events: auto;
 }
 
 .viewer-stage:fullscreen .slide-nav button,
 .viewer-stage--fullscreen:fullscreen .slide-nav button {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
+  min-width: 2.5rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
   color: #fff;
 }
 
 .viewer-stage:fullscreen .slide-nav button:not(:disabled):hover,
 .viewer-stage--fullscreen:fullscreen .slide-nav button:not(:disabled):hover {
   border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .viewer-stage:fullscreen .slide-nav button:disabled,
@@ -337,12 +359,15 @@ a:hover {
 
 .viewer-stage:fullscreen .slide-counter,
 .viewer-stage--fullscreen:fullscreen .slide-counter {
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  min-width: 3.5rem;
 }
 
 .viewer-stage:fullscreen.viewer-stage--slides,
 .viewer-stage--fullscreen:fullscreen.viewer-stage--slides {
-  padding-bottom: 5rem;
+  /* 하단 화살표 UI와 슬라이드가 겹치지 않도록 여백 확보 */
+  padding-bottom: 3.25rem;
   cursor: pointer;
 }
 
@@ -367,11 +392,12 @@ a:hover {
 }
 
 .slide-frame:has(> header) {
-  justify-content: flex-start;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-content: stretch;
 }
 
 .slide-frame > .slide-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -435,11 +461,12 @@ a:hover {
 }
 
 .pdf-export-slide:has(> header) {
-  justify-content: flex-start;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-content: stretch;
 }
 
 .pdf-export-slide > .slide-body {
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
