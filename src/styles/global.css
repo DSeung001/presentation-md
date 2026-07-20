@@ -416,21 +416,24 @@ a:hover {
   width: 960px;
   min-height: 0;
   flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 2rem 2.25rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
+}
+
+.pdf-export-slide.prose h1 {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.pdf-export-slide.prose h2 {
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
 }
 
 .pdf-export-scroll {
   width: 720px;
   min-height: 0;
   padding: 2rem 2.25rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
 }
 
 @media (max-width: 640px) {

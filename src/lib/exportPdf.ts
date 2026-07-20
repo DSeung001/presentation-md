@@ -35,7 +35,7 @@ function buildExportRoot(): HTMLElement {
 
 function renderSlidePage(html: string, fontStyle: CSSProperties): HTMLElement {
   const article = document.createElement('article')
-  article.className = 'prose slide-frame pdf-export-slide'
+  article.className = 'prose pdf-export-slide'
   applyStyle(article, fontStyle)
   article.innerHTML = html
   return article
@@ -43,7 +43,7 @@ function renderSlidePage(html: string, fontStyle: CSSProperties): HTMLElement {
 
 function renderScrollPage(html: string, fontStyle: CSSProperties): HTMLElement {
   const article = document.createElement('article')
-  article.className = 'prose scroll-view pdf-export-scroll'
+  article.className = 'prose pdf-export-scroll'
   applyStyle(article, fontStyle)
   article.innerHTML = html
   return article
@@ -55,7 +55,7 @@ async function captureElement(el: HTMLElement): Promise<HTMLCanvasElement> {
   return html2canvas(el, {
     scale: 2,
     useCORS: true,
-    backgroundColor: '#fffdf9',
+    backgroundColor: '#ffffff',
   })
 }
 
