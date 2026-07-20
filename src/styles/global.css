@@ -343,6 +343,7 @@ a:hover {
 .viewer-stage:fullscreen.viewer-stage--slides,
 .viewer-stage--fullscreen:fullscreen.viewer-stage--slides {
   padding-bottom: 5rem;
+  cursor: pointer;
 }
 
 .slides-view {
@@ -401,6 +402,35 @@ a:hover {
 .viewer--slides .site-main,
 .viewer--slides {
   width: min(960px, 100%);
+}
+
+.pdf-export-root {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.pdf-export-slide {
+  width: 960px;
+  min-height: 0;
+  flex: none;
+  padding: 2rem 2.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.pdf-export-scroll {
+  width: 720px;
+  min-height: 0;
+  padding: 2rem 2.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
 }
 
 @media (max-width: 640px) {

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useFullscreen } from '../hooks/useFullscreen'
 import { useStageScale } from '../hooks/useStageScale'
+import { exportDocPdf } from '../lib/exportPdf'
 import { fontStacksToStyle, formatDocDate, getDoc, getDocFontStacks } from '../lib/markdown'
 
 type ViewMode = 'scroll' | 'slides'
@@ -13,6 +14,7 @@ export default function Viewer() {
   const viewParam = searchParams.get('view')
   const mode: ViewMode = viewParam === 'slides' ? 'slides' : 'scroll'
   const [index, setIndex] = useState(0)
+  const [exporting, setExporting] = useState(false)
   const stageRef = useRef<HTMLElement>(null)
   const slideNavRef = useRef<HTMLElement>(null)
   const { active: fullscreen, toggle: toggleFullscreen } =
@@ -58,6 +60,29 @@ export default function Viewer() {
     },
     [doc],
   )
+
+  const onStageClick = useCallback(
+    (e: MouseEvent<HTMLElement>) => {
+      if (!fullscreen || mode !== 'slides') return
+      if ((e.target as HTMLElement).closest('a, button, .slide-nav')) return
+      const rect = stageRef.current?.getBoundingClientRect()
+      if (!rect) return
+      const ratio = (e.clientX - rect.left) / rect.width
+      if (ratio < 0.5) go(-1)
+      else go(1)
+    },
+    [fullscreen, mode, go],
+  )
+
+  const onExportPdf = useCallback(async () => {
+    if (!doc || exporting) return
+    setExporting(true)
+    try {
+      await exportDocPdf(doc, mode, fontStyle)
+    } finally {
+      setExporting(false)
+    }
+  }, [doc, exporting, mode, fontStyle])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -120,6 +145,14 @@ export default function Viewer() {
           <button
             type="button"
             className="toolbar-btn"
+            onClick={() => void onExportPdf()}
+            disabled={exporting}
+          >
+            {exporting ? 'PDF 생성 중…' : 'PDF 다운로드'}
+          </button>
+          <button
+            type="button"
+            className="toolbar-btn"
             onClick={onToggleFullscreen}
             aria-pressed={fullscreen}
           >
@@ -147,6 +180,7 @@ export default function Viewer() {
       <section
         ref={stageRef}
         className={`viewer-stage viewer-stage--${mode}${fullscreen ? ' viewer-stage--fullscreen' : ''}`}
+        onClick={onStageClick}
       >
         <div className="viewer-stage-scaler-host" style={hostStyle}>
           <div
