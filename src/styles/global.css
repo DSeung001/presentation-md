@@ -366,6 +366,18 @@ a:hover {
   min-height: calc(100vh - 10rem);
 }
 
+.slide-frame:has(> header) {
+  justify-content: flex-start;
+}
+
+.slide-frame > .slide-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
 .slide-nav {
   display: flex;
   align-items: center;
@@ -422,11 +434,27 @@ a:hover {
   padding: 2rem 2.25rem;
 }
 
+.pdf-export-slide:has(> header) {
+  justify-content: flex-start;
+}
+
+.pdf-export-slide > .slide-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
 .pdf-export-slide.prose h1 {
   font-size: clamp(1.8rem, 4vw, 2.4rem);
 }
 
 .pdf-export-slide.prose h2 {
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+}
+
+.pdf-export-slide.prose > header {
   font-size: clamp(1.4rem, 3vw, 1.85rem);
 }
 

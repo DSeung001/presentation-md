@@ -108,10 +108,26 @@ function resolveImageSources(html: string, slug: string): string {
   return template.innerHTML
 }
 
+function wrapSlideHeader(html: string): string {
+  const template = document.createElement('template')
+  template.innerHTML = html
+
+  const header = template.content.querySelector(':scope > header')
+  if (!header) return html
+
+  const body = document.createElement('div')
+  body.className = 'slide-body'
+  for (const node of [...template.content.childNodes]) {
+    if (node !== header) body.appendChild(node)
+  }
+  template.content.replaceChildren(header, body)
+  return template.innerHTML
+}
+
 function renderMarkdown(md: string, slug: string): string {
   const raw = marked.parse(md, { async: false }) as string
-  const safe = DOMPurify.sanitize(raw)
-  return wrapLatin(resolveImageSources(safe, slug))
+  const safe = DOMPurify.sanitize(raw, { ADD_TAGS: ['header'] })
+  return wrapLatin(wrapSlideHeader(resolveImageSources(safe, slug)))
 }
 
 export function parseMarkdown(raw: string, slug: string): ParsedDoc {

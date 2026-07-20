@@ -49,6 +49,30 @@
   font-size: 1.25rem;
 }
 
+.prose > header {
+  flex-shrink: 0;
+  width: 100%;
+  margin: 0 0 1.25rem;
+  padding: 0 0 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ko-heading);
+  font-size: 1.55rem;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.prose > header .text-en {
+  font-family: var(--font-en-heading);
+}
+
+.prose .slide-body > :first-child {
+  margin-top: 0;
+}
+
+.prose .slide-body > :last-child {
+  margin-bottom: 0;
+}
+
 .prose p,
 .prose ul,
 .prose ol,
@@ -159,6 +183,10 @@
 }
 
 .slide-frame.prose h2 {
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+}
+
+.slide-frame.prose > header {
   font-size: clamp(1.4rem, 3vw, 1.85rem);
 }
 
