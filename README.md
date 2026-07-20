@@ -16,7 +16,20 @@ npm run dev
 
 ## 문서 작성
 
-`content/`에 `.md` 파일을 추가합니다.
+`content/<slug>/index.md` 형식으로 문서를 추가합니다. 폴더 이름이 문서 URL의 slug가 됩니다.
+
+```text
+content/
+└── example/
+    ├── index.md
+    └── diagram.png
+```
+
+같은 폴더의 이미지는 Markdown 상대 경로로 참조합니다.
+
+```md
+![시스템 구성도](./diagram.png)
+```
 
 - `title`: 목록·헤더에 표시
 - `date`: 문서 날짜 (예: `2026-07-20`)

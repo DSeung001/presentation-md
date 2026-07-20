@@ -2,6 +2,7 @@ import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 import type { CSSProperties } from 'react'
 import type { ParsedDoc } from './markdown'
+import { renderMermaid } from './renderMermaid'
 
 type ViewMode = 'scroll' | 'slides'
 
@@ -89,7 +90,9 @@ export async function exportSlidesPdf(
   try {
     for (let i = 0; i < slideHtmls.length; i++) {
       root.replaceChildren(renderSlidePage(slideHtmls[i], fontStyle))
-      const canvas = await captureElement(root.firstElementChild as HTMLElement)
+      const page = root.firstElementChild as HTMLElement
+      await renderMermaid(page)
+      const canvas = await captureElement(page)
       const { x, y, w, h } = fitImageOnPage(canvas, SLIDE_PAGE_W, SLIDE_PAGE_H)
       const imgData = canvas.toDataURL('image/png')
 
@@ -113,7 +116,9 @@ export async function exportScrollPdf(
   root.replaceChildren(renderScrollPage(scrollHtml, fontStyle))
 
   try {
-    const canvas = await captureElement(root.firstElementChild as HTMLElement)
+    const page = root.firstElementChild as HTMLElement
+    await renderMermaid(page)
+    const canvas = await captureElement(page)
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
     const imgData = canvas.toDataURL('image/png')
     const imgWidth = A4_W

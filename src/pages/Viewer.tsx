@@ -4,6 +4,7 @@ import { useFullscreen } from '../hooks/useFullscreen'
 import { useStageScale } from '../hooks/useStageScale'
 import { exportDocPdf } from '../lib/exportPdf'
 import { fontStacksToStyle, formatDocDate, getDoc, getDocFontStacks } from '../lib/markdown'
+import { renderMermaid } from '../lib/renderMermaid'
 
 type ViewMode = 'scroll' | 'slides'
 
@@ -17,6 +18,7 @@ export default function Viewer() {
   const [exporting, setExporting] = useState(false)
   const stageRef = useRef<HTMLElement>(null)
   const slideNavRef = useRef<HTMLElement>(null)
+  const contentRef = useRef<HTMLElement>(null)
   const { active: fullscreen, toggle: toggleFullscreen } =
     useFullscreen(stageRef)
   const { captureBaseSize, innerRef, hostStyle, innerStyle } = useStageScale(
@@ -39,6 +41,15 @@ export default function Viewer() {
   useEffect(() => {
     setIndex(0)
   }, [slug, mode])
+
+  useEffect(() => {
+    const content = contentRef.current
+    if (!content) return
+
+    void renderMermaid(content).catch((error) => {
+      console.error('Mermaid 다이어그램 렌더링에 실패했습니다.', error)
+    })
+  }, [doc, mode, index])
 
   const setMode = useCallback(
     (next: ViewMode) => {
@@ -190,12 +201,14 @@ export default function Viewer() {
           >
             {mode === 'scroll' ? (
               <article
+                ref={contentRef}
                 className="prose scroll-view"
                 style={fontStyle}
                 dangerouslySetInnerHTML={{ __html: doc.scrollHtml }}
               />
             ) : (
               <article
+                ref={contentRef}
                 className="prose slide-frame"
                 style={fontStyle}
                 dangerouslySetInnerHTML={{ __html: doc.slideHtmls[index] ?? '' }}

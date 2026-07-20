@@ -32,6 +32,15 @@ export type ParsedDoc = {
 
 const SLIDE_SPLIT = /\n---\n/
 
+const assets = import.meta.glob(
+  '../../content/**/*.{avif,gif,jpeg,jpg,png,svg,webp}',
+  {
+    query: '?url',
+    import: 'default',
+    eager: true,
+  },
+) as Record<string, string>
+
 function parseFrontmatter(raw: string): {
   data: Record<string, string>
   content: string
@@ -66,10 +75,43 @@ export function formatDocDate(date: string): string {
   )
 }
 
-function renderMarkdown(md: string): string {
+function resolveImageSources(html: string, slug: string): string {
+  const template = document.createElement('template')
+  template.innerHTML = html
+
+  for (const image of template.content.querySelectorAll('img[src]')) {
+    const src = image.getAttribute('src')
+    if (
+      !src
+      || src.startsWith('/')
+      || src.startsWith('//')
+      || src.startsWith('#')
+      || /^[a-z][a-z\d+.-]*:/i.test(src)
+    ) {
+      continue
+    }
+
+    const url = new URL(src, `https://content.local/${encodeURIComponent(slug)}/`)
+    let pathname = url.pathname
+    try {
+      pathname = decodeURIComponent(pathname)
+    } catch {
+      // 잘못 인코딩된 경로는 원문 그대로 조회한다.
+    }
+
+    const assetUrl = assets[`../../content${pathname}`]
+    if (assetUrl) {
+      image.setAttribute('src', `${assetUrl}${url.search}${url.hash}`)
+    }
+  }
+
+  return template.innerHTML
+}
+
+function renderMarkdown(md: string, slug: string): string {
   const raw = marked.parse(md, { async: false }) as string
   const safe = DOMPurify.sanitize(raw)
-  return wrapLatin(safe)
+  return wrapLatin(resolveImageSources(safe, slug))
 }
 
 export function parseMarkdown(raw: string, slug: string): ParsedDoc {
@@ -85,7 +127,7 @@ export function parseMarkdown(raw: string, slug: string): ParsedDoc {
     .filter(Boolean)
 
   const scrollParts = slides.map((slide, i) => {
-    const html = renderMarkdown(slide)
+    const html = renderMarkdown(slide, slug)
     if (i === 0) return html
     return `<hr class="slide-break" />${html}`
   })
@@ -99,18 +141,18 @@ export function parseMarkdown(raw: string, slug: string): ParsedDoc {
     body,
     slides,
     scrollHtml: scrollParts.join(''),
-    slideHtmls: slides.map(renderMarkdown),
+    slideHtmls: slides.map((slide) => renderMarkdown(slide, slug)),
   }
 }
 
-const modules = import.meta.glob('../../content/**/*.md', {
+const modules = import.meta.glob('../../content/*/index.md', {
   query: '?raw',
   import: 'default',
   eager: true,
 }) as Record<string, string>
 
 function slugFromPath(path: string): string {
-  const match = path.match(/\/([^/]+)\.md$/)
+  const match = path.match(/\/([^/]+)\/index\.md$/)
   return match?.[1] ?? path
 }
 

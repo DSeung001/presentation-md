@@ -101,6 +101,18 @@
   background: transparent;
 }
 
+.prose .mermaid {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 1em;
+  overflow-x: auto;
+}
+
+.prose .mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .prose blockquote {
   margin-left: 0;
   padding: 0.25rem 0 0.25rem 1rem;
