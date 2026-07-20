@@ -69,7 +69,7 @@ export default function Viewer() {
       if (!rect) return
       const ratio = (e.clientX - rect.left) / rect.width
       if (ratio < 0.5) go(-1)
-      else go(1)
+        else go(1)
     },
     [fullscreen, mode, go],
   )
