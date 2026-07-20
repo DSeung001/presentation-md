@@ -46,14 +46,33 @@ PyCon 2026 핸즈온 튜토리얼
 
 <header>구성할 시스템</header>
 
-프로젝트 전체 구상도
+업로드는 API가 받고, 인코딩은 Celery worker가 Redis 큐를 통해 백그라운드에서 처리
 
 ```mermaid
 flowchart LR
-    User --> FastAPI
-    FastAPI --> Celery
+    Browser["Browser / UI"]
+    FastAPI["FastAPI api"]
+    Redis["Redis broker"]
+    Celery["Celery worker"]
+    FFmpeg["FFmpeg HLS"]
+    Data["data volume"]
+
+    Browser -->|"1. 영상 업로드"| FastAPI
+    Browser -->|"2. 작업 상태 조회 polling"| FastAPI
+    Browser -->|"3. HLS 재생 요청"| FastAPI
+    FastAPI -->|"enqueue task"| Redis
+    Redis -->|"consume"| Celery
     Celery --> FFmpeg
+    FastAPI --> Data
+    Celery --> Data
+    FastAPI -->|"HLS manifest / segments"| Browser
 ```
+
+- FastAPI: 업로드 수신, 작업 enqueue, 상태 API 제공, 정적 페이지와 HLS 서빙
+- Redis: Celery broker(작업 큐)와 result backend(작업 상태)
+- Celery worker: Redis에서 작업을 consume하고 FFmpeg로 인코딩 실행
+- FFmpeg: 원본 영상을 HLS manifest와 segment로 변환
+- data volume: 업로드 원본과 인코딩 결과를 API와 worker가 공유
 
 ---
 
