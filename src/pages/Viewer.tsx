@@ -3,8 +3,14 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useFullscreen } from '../hooks/useFullscreen'
 import { useStageScale } from '../hooks/useStageScale'
 import { exportDocPdf } from '../lib/exportPdf'
-import { fontStacksToStyle, formatDocDate, getDoc, getDocFontStacks } from '../lib/markdown'
-import { renderMermaid } from '../lib/renderMermaid'
+import {
+  fontStacksToStyle,
+  formatDocDate,
+  getDoc,
+  getDocFontStacks,
+  type ParsedDoc,
+} from '../lib/markdown'
+import { hydrateDocMermaid } from '../lib/renderMermaid'
 
 type ViewMode = 'scroll' | 'slides'
 
@@ -12,6 +18,7 @@ export default function Viewer() {
   const { slug = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const doc = useMemo(() => getDoc(slug), [slug])
+  const [viewDoc, setViewDoc] = useState<ParsedDoc | null>(null)
   const viewParam = searchParams.get('view')
   const mode: ViewMode = viewParam === 'slides' ? 'slides' : 'scroll'
   const [index, setIndex] = useState(0)
@@ -19,7 +26,6 @@ export default function Viewer() {
   const [navHint, setNavHint] = useState(false)
   const stageRef = useRef<HTMLElement>(null)
   const slideNavRef = useRef<HTMLElement>(null)
-  const contentRef = useRef<HTMLElement>(null)
   const navHintTimerRef = useRef<number | null>(null)
   const { active: fullscreen, toggle: toggleFullscreen } =
     useFullscreen(stageRef)
@@ -35,6 +41,8 @@ export default function Viewer() {
     void toggleFullscreen(fullscreen ? undefined : captureBaseSize)
   }, [fullscreen, captureBaseSize, toggleFullscreen])
 
+  const activeDoc = viewDoc ?? doc
+
   const fontStyle = useMemo((): CSSProperties | undefined => {
     if (!doc) return undefined
     return fontStacksToStyle(getDocFontStacks(doc)) as CSSProperties
@@ -43,6 +51,29 @@ export default function Viewer() {
   useEffect(() => {
     setIndex(0)
   }, [slug, mode])
+
+  useEffect(() => {
+    if (!doc) {
+      setViewDoc(null)
+      return
+    }
+
+    const controller = new AbortController()
+    setViewDoc(null)
+
+    void hydrateDocMermaid(doc.slideHtmls, controller.signal)
+      .then(({ slideHtmls, scrollHtml }) => {
+        if (controller.signal.aborted) return
+        setViewDoc({ ...doc, slideHtmls, scrollHtml })
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return
+        console.error('Mermaid 다이어그램 렌더링에 실패했습니다.', error)
+        setViewDoc(doc)
+      })
+
+    return () => controller.abort()
+  }, [doc])
 
   useEffect(() => {
     if (navHintTimerRef.current != null) {
@@ -69,15 +100,6 @@ export default function Viewer() {
     }
   }, [index, fullscreen, mode])
 
-  useEffect(() => {
-    const content = contentRef.current
-    if (!content) return
-
-    void renderMermaid(content).catch((error) => {
-      console.error('Mermaid 다이어그램 렌더링에 실패했습니다.', error)
-    })
-  }, [doc, mode, index])
-
   const setMode = useCallback(
     (next: ViewMode) => {
       const params = new URLSearchParams(searchParams)
@@ -93,10 +115,12 @@ export default function Viewer() {
 
   const go = useCallback(
     (delta: number) => {
-      if (!doc) return
-      setIndex((i) => Math.min(doc.slideHtmls.length - 1, Math.max(0, i + delta)))
+      if (!activeDoc) return
+      setIndex((i) =>
+        Math.min(activeDoc.slideHtmls.length - 1, Math.max(0, i + delta)),
+      )
     },
-    [doc],
+    [activeDoc],
   )
 
   const onStageClick = useCallback(
@@ -107,20 +131,20 @@ export default function Viewer() {
       if (!rect) return
       const ratio = (e.clientX - rect.left) / rect.width
       if (ratio < 0.5) go(-1)
-        else go(1)
+      else go(1)
     },
     [fullscreen, mode, go],
   )
 
   const onExportPdf = useCallback(async () => {
-    if (!doc || exporting) return
+    if (!activeDoc || exporting) return
     setExporting(true)
     try {
-      await exportDocPdf(doc, mode, fontStyle)
+      await exportDocPdf(activeDoc, mode, fontStyle)
     } finally {
       setExporting(false)
     }
-  }, [doc, exporting, mode, fontStyle])
+  }, [activeDoc, exporting, mode, fontStyle])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -144,15 +168,15 @@ export default function Viewer() {
       } else if (e.key === 'Home') {
         e.preventDefault()
         setIndex(0)
-      } else if (e.key === 'End' && doc) {
+      } else if (e.key === 'End' && activeDoc) {
         e.preventDefault()
-        setIndex(doc.slideHtmls.length - 1)
+        setIndex(activeDoc.slideHtmls.length - 1)
       }
     }
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [mode, go, doc, onToggleFullscreen])
+  }, [mode, go, activeDoc, onToggleFullscreen])
 
   if (!doc) {
     return (
@@ -163,7 +187,8 @@ export default function Viewer() {
     )
   }
 
-  const total = doc.slideHtmls.length
+  const displayDoc = viewDoc ?? doc
+  const total = displayDoc.slideHtmls.length
 
   return (
     <section className={`viewer viewer--${mode}`}>
@@ -228,17 +253,17 @@ export default function Viewer() {
           >
             {mode === 'scroll' ? (
               <article
-                ref={contentRef}
                 className="prose scroll-view"
                 style={fontStyle}
-                dangerouslySetInnerHTML={{ __html: doc.scrollHtml }}
+                dangerouslySetInnerHTML={{ __html: displayDoc.scrollHtml }}
               />
             ) : (
               <article
-                ref={contentRef}
                 className="prose slide-frame"
                 style={fontStyle}
-                dangerouslySetInnerHTML={{ __html: doc.slideHtmls[index] ?? '' }}
+                dangerouslySetInnerHTML={{
+                  __html: displayDoc.slideHtmls[index] ?? '',
+                }}
               />
             )}
           </div>

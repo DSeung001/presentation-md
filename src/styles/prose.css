@@ -125,6 +125,14 @@
   background: transparent;
 }
 
+.prose pre:has(> code.language-mermaid) {
+  visibility: hidden;
+  min-height: 4rem;
+  margin: 0 0 1em;
+  background: transparent;
+  padding: 0;
+}
+
 .prose .mermaid {
   display: flex;
   justify-content: center;

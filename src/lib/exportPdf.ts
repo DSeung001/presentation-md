@@ -2,7 +2,7 @@ import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 import type { CSSProperties } from 'react'
 import type { ParsedDoc } from './markdown'
-import { renderMermaid } from './renderMermaid'
+import { hydrateDocMermaid } from './renderMermaid'
 
 type ViewMode = 'scroll' | 'slides'
 
@@ -91,7 +91,6 @@ export async function exportSlidesPdf(
     for (let i = 0; i < slideHtmls.length; i++) {
       root.replaceChildren(renderSlidePage(slideHtmls[i], fontStyle))
       const page = root.firstElementChild as HTMLElement
-      await renderMermaid(page)
       const canvas = await captureElement(page)
       const { x, y, w, h } = fitImageOnPage(canvas, SLIDE_PAGE_W, SLIDE_PAGE_H)
       const imgData = canvas.toDataURL('image/png')
@@ -117,7 +116,6 @@ export async function exportScrollPdf(
 
   try {
     const page = root.firstElementChild as HTMLElement
-    await renderMermaid(page)
     const canvas = await captureElement(page)
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
     const imgData = canvas.toDataURL('image/png')
@@ -149,9 +147,13 @@ export async function exportDocPdf(
 ) {
   const style = fontStyle ?? {}
   const filename = sanitizeFilename(doc.title)
+
+  // Viewer에서 이미 hydrate된 HTML이면 그대로 통과한다.
+  const { slideHtmls, scrollHtml } = await hydrateDocMermaid(doc.slideHtmls)
+
   if (mode === 'slides') {
-    await exportSlidesPdf(doc.slideHtmls, style, filename)
+    await exportSlidesPdf(slideHtmls, style, filename)
   } else {
-    await exportScrollPdf(doc.scrollHtml, style, filename)
+    await exportScrollPdf(scrollHtml, style, filename)
   }
 }
