@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { getDoc } from '../lib/markdown'
+import { useFullscreen } from '../hooks/useFullscreen'
+import { fontStacksToStyle, formatDocDate, getDoc, getDocFontStacks } from '../lib/markdown'
 
 type ViewMode = 'scroll' | 'slides'
 
@@ -8,6 +9,14 @@ export default function Viewer() {
   const { slug = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const doc = useMemo(() => getDoc(slug), [slug])
+  const stageRef = useRef<HTMLElement>(null)
+  const { active: fullscreen, toggle: toggleFullscreen } =
+    useFullscreen(stageRef)
+
+  const fontStyle = useMemo((): CSSProperties | undefined => {
+    if (!doc) return undefined
+    return fontStacksToStyle(getDocFontStacks(doc)) as CSSProperties
+  }, [doc])
 
   const viewParam = searchParams.get('view')
   const mode: ViewMode = viewParam === 'slides' ? 'slides' : 'scroll'
@@ -40,10 +49,19 @@ export default function Viewer() {
   )
 
   useEffect(() => {
-    if (mode !== 'slides') return
-
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault()
+        void toggleFullscreen()
+        return
+      }
+
+      if (mode !== 'slides') return
+
+      if (e.key === ' ') {
+        e.preventDefault()
+        go(e.shiftKey ? -1 : 1)
+      } else if (e.key === 'ArrowRight' || e.key === 'PageDown') {
         e.preventDefault()
         go(1)
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
@@ -60,7 +78,7 @@ export default function Viewer() {
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [mode, go, doc])
+  }, [mode, go, doc, toggleFullscreen])
 
   if (!doc) {
     return (
@@ -79,57 +97,81 @@ export default function Viewer() {
         <Link to="/" className="back-link">
           ← 목록
         </Link>
-        <h1 className="viewer-title">{doc.title}</h1>
-        <div className="view-toggle" role="group" aria-label="보기 모드">
+        <div className="viewer-heading">
+          <h1 className="viewer-title">{doc.title}</h1>
+          {doc.date ? (
+            <time className="viewer-date" dateTime={doc.date}>
+              {formatDocDate(doc.date)}
+            </time>
+          ) : null}
+        </div>
+        <div className="viewer-actions">
           <button
             type="button"
-            className={mode === 'scroll' ? 'active' : ''}
-            onClick={() => setMode('scroll')}
+            className="toolbar-btn"
+            onClick={() => void toggleFullscreen()}
+            aria-pressed={fullscreen}
           >
-            스크롤
+            {fullscreen ? '전체보기 종료' : '전체보기'}
           </button>
-          <button
-            type="button"
-            className={mode === 'slides' ? 'active' : ''}
-            onClick={() => setMode('slides')}
-          >
-            슬라이드
-          </button>
+          <div className="view-toggle" role="group" aria-label="보기 모드">
+            <button
+              type="button"
+              className={mode === 'scroll' ? 'active' : ''}
+              onClick={() => setMode('scroll')}
+            >
+              스크롤
+            </button>
+            <button
+              type="button"
+              className={mode === 'slides' ? 'active' : ''}
+              onClick={() => setMode('slides')}
+            >
+              슬라이드
+            </button>
+          </div>
         </div>
       </div>
 
-      {mode === 'scroll' ? (
-        <article
-          className="prose scroll-view"
-          dangerouslySetInnerHTML={{ __html: doc.scrollHtml }}
-        />
-      ) : (
-        <div className="slides-view">
+      <section
+        ref={stageRef}
+        className={`viewer-stage${fullscreen ? ' viewer-stage--fullscreen' : ''}`}
+      >
+        {mode === 'scroll' ? (
           <article
-            className="prose slide-frame"
-            dangerouslySetInnerHTML={{ __html: doc.slideHtmls[index] ?? '' }}
+            className="prose scroll-view"
+            style={fontStyle}
+            dangerouslySetInnerHTML={{ __html: doc.scrollHtml }}
           />
-          <nav className="slide-nav" aria-label="슬라이드 탐색">
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              disabled={index === 0}
-            >
-              이전
-            </button>
-            <span className="slide-counter">
-              {index + 1} / {total}
-            </span>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              disabled={index >= total - 1}
-            >
-              다음
-            </button>
-          </nav>
-        </div>
-      )}
+        ) : (
+          <div className="slides-view">
+            <article
+              className="prose slide-frame"
+              style={fontStyle}
+              dangerouslySetInnerHTML={{ __html: doc.slideHtmls[index] ?? '' }}
+            />
+            <nav className="slide-nav" aria-label="슬라이드 탐색">
+              <button
+                type="button"
+                onClick={() => go(-1)}
+                disabled={index === 0}
+              >
+                이전
+              </button>
+              <span className="slide-counter">
+                {index + 1} / {total}
+              </span>
+              <button
+                type="button"
+                onClick={() => go(1)}
+                disabled={index >= total - 1}
+              >
+                다음
+              </button>
+            </nav>
+          </div>
+        )}
+      </section>
     </section>
   )
 }

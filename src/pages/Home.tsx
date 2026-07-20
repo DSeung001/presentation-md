@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { listDocs } from '../lib/markdown'
+import { formatDocDate, listDocs } from '../lib/markdown'
 
 export default function Home() {
   const docs = listDocs()
@@ -13,7 +13,14 @@ export default function Home() {
       <ul className="doc-list">
         {docs.map((doc) => (
           <li key={doc.slug}>
-            <Link to={`/p/${doc.slug}`}>{doc.title}</Link>
+            <Link to={`/p/${doc.slug}`} className="doc-list-link">
+              <span className="doc-list-title">{doc.title}</span>
+              {doc.date ? (
+                <time className="doc-list-date" dateTime={doc.date}>
+                  {formatDocDate(doc.date)}
+                </time>
+              ) : null}
+            </Link>
           </li>
         ))}
       </ul>

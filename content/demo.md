@@ -1,5 +1,8 @@
 ---
 title: 데모 발표
+date: 2026-07-18
+fontKo: gothic
+fontEn: serif
 ---
 
 # 데모

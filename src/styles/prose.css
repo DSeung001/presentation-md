@@ -1,4 +1,9 @@
 .prose {
+  --font-ko-body: "Noto Sans KR", sans-serif;
+  --font-ko-heading: "Fraunces", Georgia, serif;
+  --font-en-body: "Noto Sans", sans-serif;
+  --font-en-heading: "Fraunces", Georgia, serif;
+  font-family: var(--font-ko-body);
   font-size: 1.05rem;
   color: var(--ink);
 }
@@ -15,10 +20,21 @@
 .prose h2,
 .prose h3,
 .prose h4 {
-  font-family: var(--font-display);
+  font-family: var(--font-ko-heading);
   line-height: 1.25;
   letter-spacing: -0.02em;
   margin: 1.6em 0 0.5em;
+}
+
+.prose h1 .text-en,
+.prose h2 .text-en,
+.prose h3 .text-en,
+.prose h4 .text-en {
+  font-family: var(--font-en-heading);
+}
+
+.prose .text-en {
+  font-family: var(--font-en-body);
 }
 
 .prose h1 {
@@ -55,7 +71,7 @@
 }
 
 .prose code {
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 0.9em;
   background: var(--accent-soft);
   padding: 0.12em 0.35em;

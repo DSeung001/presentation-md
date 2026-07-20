@@ -1,6 +1,8 @@
 # presentation-md
 
 Markdown으로 본문을 쓰고, 웹에서 **스크롤 문서** 또는 **슬라이드**로 보는 MVP입니다.
+
+- 저장소: https://github.com/DSeung001/presentation-md
 - 사이트: https://dseung001.github.io/presentation-md/
 
 ## 로컬 실행
@@ -16,10 +18,16 @@ npm run dev
 
 `content/`에 `.md` 파일을 추가합니다.
 
-- YAML frontmatter의 `title`: 목록·헤더에 표시
+- `title`: 목록·헤더에 표시
+- `date`: 문서 날짜 (예: `2026-07-20`)
+- `font`: 한글·영어 공통 글꼴 프리셋 (shorthand)
+- `fontKo` / `fontEn`: 한글·영어 글꼴을 각각 지정 (`font`보다 우선)
+- 프리셋: `default`, `serif`, `mono`, `display`, `gothic`
 - `---`: 슬라이드 모드에서 페이지 구분 (스크롤 모드에서는 구분선)
 
-문서 상단에서 **스크롤** / **슬라이드** 모드를 전환할 수 있습니다. 슬라이드 모드에서는 ← → / Space 또는 하단 버튼으로 넘깁니다.
+헤더 **글꼴** 메뉴에서 프리셋별 한·영 미리보기를 확인할 수 있습니다.
+
+문서 상단에서 **스크롤** / **슬라이드** 모드를 전환할 수 있습니다. **전체보기**는 버튼 또는 `F` 키로 켜고, `Esc` 또는 `F`로 끕니다.
 
 ## GitHub Pages 배포
 

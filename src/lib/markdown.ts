@@ -1,14 +1,28 @@
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import {
+  type DocFonts,
+  resolveDocFonts,
+} from './fonts'
+import { wrapLatin } from './wrapLatin'
+
+export type { DocFonts, FontPreset } from './fonts'
+export { FONT_PRESETS, fontStacksToStyle, getDocFontStacks } from './fonts'
 
 export type DocMeta = {
   slug: string
   title: string
+  date?: string
+  fontKo: DocFonts['fontKo']
+  fontEn: DocFonts['fontEn']
 }
 
 export type ParsedDoc = {
   slug: string
   title: string
+  date?: string
+  fontKo: DocFonts['fontKo']
+  fontEn: DocFonts['fontEn']
   body: string
   slides: string[]
   scrollHtml: string
@@ -38,14 +52,30 @@ function parseFrontmatter(raw: string): {
   return { data, content: match[2] }
 }
 
+function parseDate(value: string | undefined): string | undefined {
+  const raw = value?.trim()
+  return raw || undefined
+}
+
+export function formatDocDate(date: string): string {
+  const parsed = Date.parse(date)
+  if (Number.isNaN(parsed)) return date
+  return new Intl.DateTimeFormat('ko-KR', { dateStyle: 'long' }).format(
+    new Date(parsed),
+  )
+}
+
 function renderMarkdown(md: string): string {
   const raw = marked.parse(md, { async: false }) as string
-  return DOMPurify.sanitize(raw)
+  const safe = DOMPurify.sanitize(raw)
+  return wrapLatin(safe)
 }
 
 export function parseMarkdown(raw: string, slug: string): ParsedDoc {
   const { data, content } = parseFrontmatter(raw)
   const title = data.title?.trim() ? data.title.trim() : slug
+  const date = parseDate(data.date)
+  const { fontKo, fontEn } = resolveDocFonts(data)
 
   const body = content.trim()
   const slides = body
@@ -62,6 +92,9 @@ export function parseMarkdown(raw: string, slug: string): ParsedDoc {
   return {
     slug,
     title,
+    date,
+    fontKo,
+    fontEn,
     body,
     slides,
     scrollHtml: scrollParts.join(''),
@@ -86,9 +119,21 @@ export function listDocs(): DocMeta[] {
       const slug = slugFromPath(path)
       const { data } = parseFrontmatter(raw)
       const title = data.title?.trim() ? data.title.trim() : slug
-      return { slug, title }
+      const date = parseDate(data.date)
+      const { fontKo, fontEn } = resolveDocFonts(data)
+      return { slug, title, date, fontKo, fontEn }
     })
-    .sort((a, b) => a.title.localeCompare(b.title, 'ko'))
+    .sort((a, b) => {
+      if (a.date && b.date) {
+        const diff = Date.parse(b.date) - Date.parse(a.date)
+        if (diff !== 0) return diff
+      } else if (a.date) {
+        return -1
+      } else if (b.date) {
+        return 1
+      }
+      return a.title.localeCompare(b.title, 'ko')
+    })
 }
 
 export function getDoc(slug: string): ParsedDoc | null {
