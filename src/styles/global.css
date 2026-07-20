@@ -271,6 +271,11 @@ a:hover {
   gap: 1rem;
 }
 
+.viewer-stage--slides .viewer-stage-scaler {
+  justify-content: center;
+  align-items: center;
+}
+
 .viewer-stage:fullscreen,
 .viewer-stage--fullscreen:fullscreen {
   background: #000;
@@ -379,7 +384,7 @@ a:hover {
 }
 
 .slide-frame {
-  flex: 1;
+  flex: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -388,7 +393,13 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: var(--shadow);
-  min-height: calc(100vh - 10rem);
+  box-sizing: border-box;
+  width: min(960px, 100%, calc((100vh - 12rem) * 16 / 9));
+  aspect-ratio: 16 / 9;
+  height: auto;
+  max-height: calc(100vh - 12rem);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .slide-frame:has(> header) {
@@ -402,6 +413,7 @@ a:hover {
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+  overflow: hidden;
 }
 
 .slide-nav {
@@ -452,12 +464,16 @@ a:hover {
 
 .pdf-export-slide {
   width: 960px;
+  aspect-ratio: 16 / 9;
+  height: auto;
   min-height: 0;
   flex: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 2rem 2.25rem;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .pdf-export-slide:has(> header) {
@@ -498,7 +514,6 @@ a:hover {
 
   .slide-frame {
     padding: 1.25rem;
-    min-height: 16rem;
   }
 }
 
