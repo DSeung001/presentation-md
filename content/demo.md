@@ -26,6 +26,15 @@ const greeting = 'Hello, slides!'
 console.log(greeting)
 ```
 
+```python
+def hello():
+    print("Hello")
+```
+
+```json
+{ "ok": true }
+```
+
 ---
 
 ## 끝

@@ -92,6 +92,15 @@
   color: inherit;
 }
 
+.prose pre code.hljs {
+  background: transparent;
+  padding: 0;
+}
+
+.prose pre .hljs {
+  background: transparent;
+}
+
 .prose blockquote {
   margin-left: 0;
   padding: 0.25rem 0 0.25rem 1rem;

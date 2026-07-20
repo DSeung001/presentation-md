@@ -1,4 +1,5 @@
 import { marked } from 'marked'
+import './codeHighlight'
 import DOMPurify from 'dompurify'
 import {
   type DocFonts,
