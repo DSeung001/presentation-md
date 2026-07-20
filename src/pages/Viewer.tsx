@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useFullscreen } from '../hooks/useFullscreen'
+import { useStageScale } from '../hooks/useStageScale'
 import { fontStacksToStyle, formatDocDate, getDoc, getDocFontStacks } from '../lib/markdown'
 
 type ViewMode = 'scroll' | 'slides'
@@ -9,19 +10,29 @@ export default function Viewer() {
   const { slug = '' } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const doc = useMemo(() => getDoc(slug), [slug])
+  const viewParam = searchParams.get('view')
+  const mode: ViewMode = viewParam === 'slides' ? 'slides' : 'scroll'
+  const [index, setIndex] = useState(0)
   const stageRef = useRef<HTMLElement>(null)
+  const slideNavRef = useRef<HTMLElement>(null)
   const { active: fullscreen, toggle: toggleFullscreen } =
     useFullscreen(stageRef)
+  const { captureBaseSize, innerRef, hostStyle, innerStyle } = useStageScale(
+    stageRef,
+    fullscreen,
+    mode,
+    mode === 'slides' ? slideNavRef : undefined,
+    mode === 'slides' ? index : slug,
+  )
+
+  const onToggleFullscreen = useCallback(() => {
+    void toggleFullscreen(fullscreen ? undefined : captureBaseSize)
+  }, [fullscreen, captureBaseSize, toggleFullscreen])
 
   const fontStyle = useMemo((): CSSProperties | undefined => {
     if (!doc) return undefined
     return fontStacksToStyle(getDocFontStacks(doc)) as CSSProperties
   }, [doc])
-
-  const viewParam = searchParams.get('view')
-  const mode: ViewMode = viewParam === 'slides' ? 'slides' : 'scroll'
-
-  const [index, setIndex] = useState(0)
 
   useEffect(() => {
     setIndex(0)
@@ -52,7 +63,7 @@ export default function Viewer() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'f' || e.key === 'F') {
         e.preventDefault()
-        void toggleFullscreen()
+        onToggleFullscreen()
         return
       }
 
@@ -78,7 +89,7 @@ export default function Viewer() {
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [mode, go, doc, toggleFullscreen])
+  }, [mode, go, doc, onToggleFullscreen])
 
   if (!doc) {
     return (
@@ -109,7 +120,7 @@ export default function Viewer() {
           <button
             type="button"
             className="toolbar-btn"
-            onClick={() => void toggleFullscreen()}
+            onClick={onToggleFullscreen}
             aria-pressed={fullscreen}
           >
             {fullscreen ? '전체보기 종료' : '전체보기'}
@@ -135,42 +146,54 @@ export default function Viewer() {
 
       <section
         ref={stageRef}
-        className={`viewer-stage${fullscreen ? ' viewer-stage--fullscreen' : ''}`}
+        className={`viewer-stage viewer-stage--${mode}${fullscreen ? ' viewer-stage--fullscreen' : ''}`}
       >
-        {mode === 'scroll' ? (
-          <article
-            className="prose scroll-view"
-            style={fontStyle}
-            dangerouslySetInnerHTML={{ __html: doc.scrollHtml }}
-          />
-        ) : (
-          <div className="slides-view">
-            <article
-              className="prose slide-frame"
-              style={fontStyle}
-              dangerouslySetInnerHTML={{ __html: doc.slideHtmls[index] ?? '' }}
-            />
-            <nav className="slide-nav" aria-label="슬라이드 탐색">
-              <button
-                type="button"
-                onClick={() => go(-1)}
-                disabled={index === 0}
-              >
-                이전
-              </button>
-              <span className="slide-counter">
-                {index + 1} / {total}
-              </span>
-              <button
-                type="button"
-                onClick={() => go(1)}
-                disabled={index >= total - 1}
-              >
-                다음
-              </button>
-            </nav>
+        <div className="viewer-stage-scaler-host" style={hostStyle}>
+          <div
+            ref={innerRef}
+            className="viewer-stage-scaler"
+            style={innerStyle}
+          >
+            {mode === 'scroll' ? (
+              <article
+                className="prose scroll-view"
+                style={fontStyle}
+                dangerouslySetInnerHTML={{ __html: doc.scrollHtml }}
+              />
+            ) : (
+              <article
+                className="prose slide-frame"
+                style={fontStyle}
+                dangerouslySetInnerHTML={{ __html: doc.slideHtmls[index] ?? '' }}
+              />
+            )}
           </div>
-        )}
+        </div>
+        {mode === 'slides' ? (
+          <nav
+            ref={slideNavRef}
+            className="slide-nav"
+            aria-label="슬라이드 탐색"
+          >
+            <button
+              type="button"
+              onClick={() => go(-1)}
+              disabled={index === 0}
+            >
+              이전
+            </button>
+            <span className="slide-counter">
+              {index + 1} / {total}
+            </span>
+            <button
+              type="button"
+              onClick={() => go(1)}
+              disabled={index >= total - 1}
+            >
+              다음
+            </button>
+          </nav>
+        ) : null}
       </section>
     </section>
   )

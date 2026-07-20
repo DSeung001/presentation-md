@@ -11,10 +11,14 @@ export function useFullscreen(ref: RefObject<HTMLElement | null>) {
     return () => document.removeEventListener('fullscreenchange', onChange)
   }, [ref])
 
-  const enter = useCallback(async () => {
-    if (!ref.current) return
-    await ref.current.requestFullscreen()
-  }, [ref])
+  const enter = useCallback(
+    async (beforeEnter?: () => void) => {
+      beforeEnter?.()
+      if (!ref.current) return
+      await ref.current.requestFullscreen()
+    },
+    [ref],
+  )
 
   const exit = useCallback(async () => {
     if (document.fullscreenElement) {
@@ -22,13 +26,16 @@ export function useFullscreen(ref: RefObject<HTMLElement | null>) {
     }
   }, [])
 
-  const toggle = useCallback(async () => {
-    if (document.fullscreenElement === ref.current) {
-      await exit()
-    } else {
-      await enter()
-    }
-  }, [ref, enter, exit])
+  const toggle = useCallback(
+    async (beforeEnter?: () => void) => {
+      if (document.fullscreenElement === ref.current) {
+        await exit()
+      } else {
+        await enter(beforeEnter)
+      }
+    },
+    [ref, enter, exit],
+  )
 
   return { active, enter, exit, toggle }
 }
