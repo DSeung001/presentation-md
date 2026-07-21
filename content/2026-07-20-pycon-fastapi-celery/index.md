@@ -315,7 +315,6 @@ flowchart LR
 - `api/app/main.py`: 입력·출력 폴더 생성, 미디어 StaticFiles 마운트
 - `api/app/routes.py`: `POST /api/videos` 업로드·`job_id` 원본 저장
 - `docker-compose.yml`: 업로드용 데이터 볼륨·환경 변수
-- `scripts/dev.py`: 로컬/도커 실행 헬퍼 보강
 - `static/index.html`, `static/style.css`: 업로드 UI
 
 ---
@@ -367,9 +366,7 @@ flowchart LR
 
 - `api/app/celery_client.py`: API용 Celery 클라이언트 (broker·backend)
 - `api/app/routes.py`: 업로드 직후 enqueue · `GET /api/jobs/{job_id}`
-- `api/requirements.txt`: Celery 의존성 추가
 - `docker-compose.yml`: Redis·worker 서비스 추가
-- `scripts/dev.py`: worker 포함 실행 헬퍼
 
 ---
 
@@ -378,12 +375,10 @@ flowchart LR
 ### 수정 파일
 
 - `static/index.html`, `static/style.css`: 상태 조회 UI 연결
-- `worker/Dockerfile`: 워커 이미지 빌드
 - `worker/app/__init__.py`: worker 패키지
 - `worker/app/celery_app.py`: 워커 Celery 앱 설정
 - `worker/app/config.py`: 워커 경로·Redis·태스크 이름
 - `worker/app/tasks.py`: stub 인코딩 태스크 (실제 FFmpeg는 03)
-- `worker/requirements.txt`: 워커 의존성
 
 ---
 
@@ -436,7 +431,6 @@ flowchart LR
 
 - `api/app/routes.py`: `SUCCESS` 시 `hls_url` 응답
 - `static/index.html`, `static/style.css`: HLS URL·재생 준비 UI
-- `worker/Dockerfile`: 이미지에 FFmpeg 포함
 - `worker/app/config.py`: 입출력·소스 파일명 상수
 - `worker/app/tasks.py`: FFmpeg로 HLS 생성 · 실패 처리
 
