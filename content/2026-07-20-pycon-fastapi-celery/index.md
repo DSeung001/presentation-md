@@ -191,7 +191,7 @@ API는 일을 적재하고 실제 실행은 Celery 워커가 담당.
 
 <header>환경 세팅</header>
 
-권장 기동: Checkpoint 00~01은 `python scripts/dev.py api`, 02~04는 `python scripts/dev.py docker`.<br/>
+권장 기동: Checkpoint 00,01은 `python scripts/dev.py api`, 02,04는 `python scripts/dev.py docker`.<br/>
 ※ Docker: 앱·의존성을 하나로 묶어서 내 PC 환경에서 분리된 곳에서 작업 세팅을 용이하게 해주고 공유도 간편함
 
 | 항목 | 용도 |
@@ -207,7 +207,7 @@ API는 일을 적재하고 실제 실행은 Celery 워커가 담당.
 Windows에서 Docker Desktop을 쓰려면 WSL 2가 필요.<br/>
 PowerShell을 **관리자**로 열고 실행.
 
-도커는 본래 리눅스(Linux) 커널 기반의 컨테이너 기술이기에 윈도우 환경에서 도커를 구동하려면 가상으로 리눅스 환경을 만들어줘야 합니다. 이때 리눅스 가상 환경을 제공하는 것이 WSL 2(Windows Subsystem for Linux 2)입니다.
+도커는 본래 리눅스(Linux) 커널 기반의 컨테이너 기술이기에 윈도우 환경에서 도커를 구동하려면 가상으로 리눅스 환경을 만들어줘야 하고, 이때 리눅스 가상 환경을 제공하는 것이 WSL 2(Windows Subsystem for Linux 2)
 
 ```cli {lines=5}
 wsl --install
@@ -241,7 +241,7 @@ git --version
 개발 환경은 미리 세팅된 상태로 진행.<br/>
 막히면 해당 체크포인트 브랜치로 옮겨 이어서 실습.
 
-```cli {lines=5}
+```cli {lines=6}
 git clone https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git
 git fetch origin
 # 00~01 권장
@@ -434,6 +434,19 @@ flowchart LR
 - `api/app/routes.py`: `SUCCESS` 시 `hls_url` 응답
 - `static/index.html`, `static/style.css`: HLS URL·재생 준비 UI
 - `worker/app/tasks.py`: FFmpeg로 HLS 생성 · 실패 처리
+
+---
+
+<header>FFmpeg</header>
+
+FFmpeg는 영상·오디오를 변환·인코딩하는 CLI 도구이며,<br/> 이 튜토리얼에서는 워커가 원본을 HLS(`playlist.m3u8` + `.ts` 조각)로 만든다.
+
+| 옵션 | 의미 |
+| --- | --- |
+| `-i` | 입력(원본) 파일 |
+| `-c:v` / `-c:a` | 비디오 H.264 · 오디오 AAC |
+| `-f hls` · `-hls_time 2` | HLS 출력, 조각 약 2초 |
+| 출력 경로 | `playlist.m3u8` (+ `.ts` 조각) |
 
 ---
 
