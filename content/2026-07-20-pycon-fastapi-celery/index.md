@@ -76,22 +76,21 @@ API 요청을 처리하는 코드에서 FFmpeg를 바로 돌리면:
 
 ```mermaid
 flowchart LR
-    Browser["Browser / UI"]
-    FastAPI["FastAPI api"]
-    Redis["Redis 대기열"]
+    UI["static/ UI"]
+    FastAPI["FastAPI"]
+    Redis["Redis"]
     Celery["Celery 워커"]
-    FFmpeg["FFmpeg HLS"]
+    FFmpeg["FFmpeg"]
     Data["공유 저장소"]
 
-    Browser -->|"1. 업로드"| FastAPI
-    FastAPI -->|"2. 작업 넣기"| Redis
-    Redis -->|"3. 작업 가져가기"| Celery
+    UI -->|"1. 업로드"| FastAPI
+    FastAPI -->|"2. 원본 저장"| Data
+    FastAPI -->|"3. 작업 넣기"| Redis
+    Redis -->|"4. 가져가기"| Celery
     Celery --> FFmpeg
-    FastAPI --> Data
-    Celery --> Data
-    Browser -->|"4. 상태 확인"| FastAPI
-    Browser -->|"5. HLS 재생"| FastAPI
-    FastAPI -->|"재생 목록 / 영상 조각"| Browser
+    FFmpeg -->|"5. HLS 저장"| Data
+    UI -->|"6. 상태 polling"| FastAPI
+    FastAPI -->|"7. 미디어 제공"| UI
 ```
 
 - FastAPI: 업로드 받기, 작업 넣기, 상태 API, 페이지·HLS 파일 제공
@@ -280,7 +279,7 @@ git switch -c checkpoint/04-hls-player origin/checkpoint/04-hls-player
 
 FastAPI 앱을 켜고 health·문서로 환경이 살아 있는지 확인한다.
 
-| 이전까지 | 이번에 추가 |
+| 이전 | 현재 |
 | --- | --- |
 | (시작점) | FastAPI 앱 · `/api/health` · `/docs` |
 | | Docker Compose로 API 기동 |
@@ -289,7 +288,7 @@ FastAPI 앱을 켜고 health·문서로 환경이 살아 있는지 확인한다.
 flowchart LR
     Browser["Browser"]
     FastAPI["FastAPI"]
-    Browser -->|"health / docs"| FastAPI
+    Browser -->|"health / docs / static"| FastAPI
 ```
 
 ---
@@ -309,14 +308,13 @@ flowchart LR
 
 ### 구성
 
-업로드를 받아 `job_id`로 원본을 저장한다. (인코딩은 아직 없음)
+`api/app/`에 업로드가 되고 `job_id`로 원본 영상이 저장됨. (인코딩은 아직 없음)
 
-| 이전까지 | 이번에 추가 |
+| 이전 | 현재 |
 | --- | --- |
 | FastAPI 기동 · health | `POST /api/videos` |
 | | `job_id` 폴더에 원본 저장 · `source_url` |
 
-볼 곳: `api/app/` 업로드·저장 경로
 
 ```mermaid
 flowchart LR
@@ -325,7 +323,7 @@ flowchart LR
     Data["data/inputs"]
     Browser -->|"업로드"| FastAPI
     FastAPI -->|"원본 저장"| Data
-    FastAPI -->|"job_id"| Browser
+    FastAPI -->|"job_id · source_url"| Browser
 ```
 
 ---
@@ -347,27 +345,24 @@ flowchart LR
 
 ### 구성
 
-인코딩을 HTTP 밖으로 빼고, 상태는 따로 조회한다.
+인코딩 작업이 별도로 수행되며 상태는 따로 조회되야 함
 
-| 이전까지 | 이번에 추가 |
+| 이전 | 현재 |
 | --- | --- |
 | 업로드 · 원본 저장 | Redis 대기열에 작업 넣기 |
 | | Celery worker 수신 · `GET /api/jobs/{job_id}` |
-
-볼 곳: enqueue 호출, worker task, 상태 API
 
 ```mermaid
 flowchart LR
     Browser["Browser"]
     FastAPI["FastAPI"]
     Redis["Redis"]
-    Celery["Celery 워커"]
-    Data["공유 저장소"]
+    Celery["Celery 워커 (stub)"]
+    Data["data/inputs"]
     Browser -->|"업로드"| FastAPI
+    FastAPI -->|"원본 저장"| Data
     FastAPI -->|"작업 넣기"| Redis
     Redis -->|"가져가기"| Celery
-    FastAPI --> Data
-    Celery --> Data
     Browser -->|"상태 조회"| FastAPI
 ```
 
@@ -389,14 +384,12 @@ flowchart LR
 
 ### 구성
 
-워커에서만 FFmpeg로 HLS를 만들고, 재생 목록이 있을 때만 성공으로 본다.
+워커에서만 FFmpeg로 HLS로 만드는 task가 정상 동작하며 SUCCESS로 응답이 와야 함
 
-| 이전까지 | 이번에 추가 |
+| 이전 | 현재 |
 | --- | --- |
 | enqueue · 상태 API | worker에서 FFmpeg 실행 |
 | | `playlist.m3u8` · 조각 파일 · `hls_url` |
-
-볼 곳: worker 인코딩 task, SUCCESS 조건
 
 ```mermaid
 flowchart LR
@@ -404,14 +397,14 @@ flowchart LR
     FastAPI["FastAPI"]
     Redis["Redis"]
     Celery["Celery 워커"]
-    FFmpeg["FFmpeg HLS"]
+    FFmpeg["FFmpeg"]
     Data["공유 저장소"]
     Browser -->|"업로드"| FastAPI
+    FastAPI -->|"원본 저장"| Data
     FastAPI -->|"작업 넣기"| Redis
     Redis -->|"가져가기"| Celery
     Celery --> FFmpeg
-    FFmpeg -->|"m3u8 + 조각"| Data
-    FastAPI --> Data
+    FFmpeg -->|"HLS 저장"| Data
     Browser -->|"상태 · hls_url"| FastAPI
 ```
 
@@ -435,7 +428,7 @@ flowchart LR
 
 최종 완성본으로 HLS 플레이어를 추가함(퍼블리싱 파일은 깃허브 저장소의 static에서 가져오기)
 
-| 이전까지 | 이번에 추가 |
+| 이전 | 현재 |
 | --- | --- |
 | HLS 인코딩 · `hls_url` | 제공 `static/` 플레이어 |
 | | 상태 polling · 원본/HLS 나란히 재생 |
@@ -443,20 +436,20 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Browser["Browser / UI"]
+    UI["static/ UI"]
     FastAPI["FastAPI"]
     Redis["Redis"]
     Celery["Celery 워커"]
-    FFmpeg["FFmpeg HLS"]
+    FFmpeg["FFmpeg"]
     Data["공유 저장소"]
-    Browser -->|"업로드"| FastAPI
+    UI -->|"업로드"| FastAPI
+    FastAPI -->|"원본 저장"| Data
     FastAPI -->|"작업 넣기"| Redis
     Redis -->|"가져가기"| Celery
     Celery --> FFmpeg
-    FastAPI --> Data
-    Celery --> Data
-    Browser -->|"상태 polling"| FastAPI
-    Browser -->|"HLS 재생"| FastAPI
+    FFmpeg -->|"HLS 저장"| Data
+    UI -->|"상태 polling"| FastAPI
+    FastAPI -->|"원본 · HLS 재생"| UI
 ```
 
 ---

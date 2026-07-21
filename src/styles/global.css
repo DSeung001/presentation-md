@@ -416,8 +416,8 @@ a:hover {
   overflow: hidden;
 }
 
-/* 텍스트가 높이를 먼저 쓰고, 코드는 남는 공간만 */
-.slide-frame > .slide-body > :not(pre):not(.code-with-path) {
+/* 텍스트가 높이를 먼저 쓰고, 코드는 남는 공간만 (이미지·mermaid는 제외) */
+.slide-frame > .slide-body > :not(pre):not(.code-with-path):not(p:has(> img)):not(.mermaid) {
   flex-shrink: 0;
 }
 
@@ -508,7 +508,7 @@ a:hover {
   overflow: hidden;
 }
 
-.pdf-export-slide > .slide-body > :not(pre):not(.code-with-path) {
+.pdf-export-slide > .slide-body > :not(pre):not(.code-with-path):not(p:has(> img)):not(.mermaid) {
   flex-shrink: 0;
 }
 

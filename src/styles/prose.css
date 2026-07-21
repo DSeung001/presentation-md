@@ -4,7 +4,7 @@
   --font-en-body: "Noto Sans", sans-serif;
   --font-en-heading: "Fraunces", Georgia, serif;
   font-family: var(--font-ko-body);
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: var(--ink);
 }
 
@@ -279,10 +279,15 @@
   object-fit: contain;
 }
 
-.slide-frame .mermaid,
-.pdf-export-slide .mermaid {
-  max-height: 100%;
+.slide-frame > .slide-body > .mermaid,
+.pdf-export-slide > .slide-body > .mermaid {
+  flex: 1 1 auto;
   min-height: 0;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 @media (max-width: 640px) {
