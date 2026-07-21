@@ -190,6 +190,51 @@ API는 일을 적재하고 실제 실행은 Celery 워커가 담당.
 
 ---
 
+<header>환경 세팅</header>
+
+권장 실행은 Docker지만 Python으로도 실행 가능.<br/>
+※ Docker: 앱·의존성을 하나로 묶어서 내 PC 환경에서 분리된 곳에서 작업 세팅을 용이하게 해주고 공유도 간편함
+
+| 항목 | 용도 |
+| --- | --- |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | API · Redis · worker 등 전체 환경 세팅|
+| [Python 3.13](https://www.python.org/downloads/release/python-3130/) | `scripts/dev.py` 헬퍼 스크립트 실행, 설치시 환경변수 등록 체크 |
+| [Git](https://git-scm.com/install/windows) | clone · 체크포인트 이동 |
+
+---
+
+<header>환경 세팅 · Windows (WSL)</header>
+
+Windows에서 Docker Desktop을 쓰려면 WSL 2가 필요.<br/>
+PowerShell을 **관리자**로 열고 실행.
+
+도커는 본래 리눅스(Linux) 커널 기반의 컨테이너 기술이기에 윈도우환경에서 도커를 구동하려면 가상으로 리눅스 환경을 만들어줘야 합니다, 이때 리눅스 가상 환경을 제공하는 것이 WSL 2 (Windows Subsystem for Linux 2) 
+
+```cli
+wsl --install
+wsl --status
+wsl --version
+wsl --set-default-version 2
+wsl --update
+```
+
+설치 후 PC 재시작이 필요할 수 있음.
+
+---
+
+<header>환경 세팅 · 확인</header>
+
+이제 다음 명령어가 정상적으로 실행되야함.
+
+```cli
+docker --version
+docker compose version
+python --version
+git --version
+```
+
+---
+
 <header>실습</header>
 
 저장소: [https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git](https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git)
@@ -198,11 +243,13 @@ API는 일을 적재하고 실제 실행은 Celery 워커가 담당.
 막히면 해당 체크포인트 브랜치로 옮겨 이어서 실습.
 
 ```cli
+git clone https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git
 git fetch origin
 python scripts/dev.py docker
 ```
 
-체크포인트는 `00` → `04` 순으로 기능을 쌓음.
+브라우저에서 `http://localhost:8000`로 체크 가능하며
+체크포인트는 순서는 `00` → `04`로 진행됨
 
 ---
 
@@ -214,7 +261,8 @@ python scripts/dev.py docker
 - `/api/health`와 `/docs` 확인
 
 ```cli
-git switch checkpoint/00-fastapi-setup
+# -c: 로컬 브랜치를 새로 만들고 그쪽으로 이동
+git switch -c checkpoint/00-fastapi-setup origin/checkpoint/00-fastapi-setup
 ```
 
 성공 기준: `GET /api/health`가 `{"status":"ok"}`를 돌려줌
@@ -231,7 +279,7 @@ git switch checkpoint/00-fastapi-setup
 - `job_id` 폴더에 원본 저장
 
 ```cli
-git switch checkpoint/01-fastapi-upload
+git switch -c checkpoint/01-fastapi-upload origin/checkpoint/01-fastapi-upload
 ```
 
 성공 기준: `POST /api/videos` 응답에 `job_id`, `source_url`이 있음
@@ -247,7 +295,7 @@ git switch checkpoint/01-fastapi-upload
 - API는 인코딩이 끝날 때까지 기다리지 않음
 
 ```cli
-git switch checkpoint/02-celery-redis
+git switch -c checkpoint/02-celery-redis origin/checkpoint/02-celery-redis
 ```
 
 성공 기준: API는 바로 `202`를 주고, 워커 로그에 작업 수신이 보임
@@ -263,7 +311,7 @@ git switch checkpoint/02-celery-redis
 - 재생 목록이 있을 때만 `SUCCESS`
 
 ```cli
-git switch checkpoint/03-ffmpeg-hls
+git switch -c checkpoint/03-ffmpeg-hls origin/checkpoint/03-ffmpeg-hls
 ```
 
 성공 기준: `SUCCESS`일 때 `hls_url`이 내려옴
@@ -278,7 +326,7 @@ git switch checkpoint/03-ffmpeg-hls
 - 원본과 HLS 결과를 나란히 재생
 
 ```cli
-git switch checkpoint/04-hls-player
+git switch -c checkpoint/04-hls-player origin/checkpoint/04-hls-player
 ```
 
 성공 기준: `SUCCESS` / `FAILURE`에서 상태 확인이 멈추고 영상이 재생됨
