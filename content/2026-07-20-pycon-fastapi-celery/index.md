@@ -304,6 +304,22 @@ flowchart LR
 
 ---
 
+<header>Checkpoint 00 → 01</header>
+
+| 완료 (00) | 다음 (01) |
+| --- | --- |
+| FastAPI 기동 · health · `/docs` | `POST /api/videos` · `job_id` 원본 저장 |
+
+### 수정 파일
+
+- `api/app/main.py`: 입력·출력 폴더 생성, 미디어 StaticFiles 마운트
+- `api/app/routes.py`: `POST /api/videos` 업로드·`job_id` 원본 저장
+- `docker-compose.yml`: 업로드용 데이터 볼륨·환경 변수
+- `scripts/dev.py`: 로컬/도커 실행 헬퍼 보강
+- `static/index.html`, `static/style.css`: 업로드 UI
+
+---
+
 <header>Checkpoint 01</header>
 
 ### 구성
@@ -338,6 +354,36 @@ flowchart LR
 - `job_id` 폴더에 원본 저장
 
 성공 기준: `POST /api/videos` 응답에 `job_id`, `source_url`이 있음
+
+---
+
+<header>Checkpoint 01 → 02 (1/2)</header>
+
+| 완료 (01) | 다음 (02) |
+| --- | --- |
+| 업로드 · 원본 저장 | Redis enqueue · Celery worker · 상태 API |
+
+### 수정 파일
+
+- `api/app/celery_client.py`: API용 Celery 클라이언트 (broker·backend)
+- `api/app/routes.py`: 업로드 직후 enqueue · `GET /api/jobs/{job_id}`
+- `api/requirements.txt`: Celery 의존성 추가
+- `docker-compose.yml`: Redis·worker 서비스 추가
+- `scripts/dev.py`: worker 포함 실행 헬퍼
+
+---
+
+<header>Checkpoint 01 → 02 (2/2)</header>
+
+### 수정 파일
+
+- `static/index.html`, `static/style.css`: 상태 조회 UI 연결
+- `worker/Dockerfile`: 워커 이미지 빌드
+- `worker/app/__init__.py`: worker 패키지
+- `worker/app/celery_app.py`: 워커 Celery 앱 설정
+- `worker/app/config.py`: 워커 경로·Redis·태스크 이름
+- `worker/app/tasks.py`: stub 인코딩 태스크 (실제 FFmpeg는 03)
+- `worker/requirements.txt`: 워커 의존성
 
 ---
 
@@ -380,6 +426,22 @@ flowchart LR
 
 ---
 
+<header>Checkpoint 02 → 03</header>
+
+| 완료 (02) | 다음 (03) |
+| --- | --- |
+| enqueue · 상태 API | worker FFmpeg · `playlist.m3u8` · `hls_url` |
+
+### 수정 파일
+
+- `api/app/routes.py`: `SUCCESS` 시 `hls_url` 응답
+- `static/index.html`, `static/style.css`: HLS URL·재생 준비 UI
+- `worker/Dockerfile`: 이미지에 FFmpeg 포함
+- `worker/app/config.py`: 입출력·소스 파일명 상수
+- `worker/app/tasks.py`: FFmpeg로 HLS 생성 · 실패 처리
+
+---
+
 <header>Checkpoint 03</header>
 
 ### 구성
@@ -419,6 +481,21 @@ flowchart LR
 - 재생 목록이 있을 때만 `SUCCESS`
 
 성공 기준: `SUCCESS`일 때 `hls_url`이 내려옴
+
+---
+
+<header>Checkpoint 03 → 04</header>
+
+| 완료 (03) | 다음 (04) |
+| --- | --- |
+| HLS 인코딩 · `hls_url` | `static/` 플레이어 · 상태 polling |
+
+`static/`은 저장소에서 가져와 교체
+
+### 수정 파일
+
+- `static/index.html`: 상태 polling · 원본/HLS 나란히 재생
+- `static/style.css`: 플레이어 레이아웃 스타일
 
 ---
 
