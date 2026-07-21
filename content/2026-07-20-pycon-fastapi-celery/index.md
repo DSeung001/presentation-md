@@ -192,7 +192,7 @@ API는 일을 적재하고 실제 실행은 Celery 워커가 담당.
 
 <header>실습</header>
 
-저장소: [github.com/DSeung001/pycon-2026-fastapi-celery-tutorial](https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git)
+저장소: [https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git](https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git)
 
 개발 환경은 미리 세팅된 상태로 진행.<br/>
 막히면 해당 체크포인트 브랜치로 옮겨 이어서 실습.
