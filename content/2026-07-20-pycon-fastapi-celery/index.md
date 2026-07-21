@@ -80,6 +80,16 @@ flowchart LR
 
 ### 체크포인트
 
+기본 세팅에서 API를 먼저 만들고, Celery 세팅으로 인코딩 결과물까지 이어갑니다.
+
+1. 기본 세팅
+   - `checkpoint/01-fastapi-upload`: FastAPI로 영상 업로드와 저장
+
+2. Celery 세팅 (결과물까지)
+   - `checkpoint/02-celery-redis`: Redis + Celery로 작업 enqueue와 상태 조회
+   - `checkpoint/03-ffmpeg-hls`: worker에서 FFmpeg로 HLS 결과 생성
+   - `checkpoint/04-hls-player`: polling과 재생으로 최종 결과 확인
+
 ---
 
 <header>사이드 프로젝트 경험담</header>

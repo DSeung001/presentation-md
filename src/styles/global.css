@@ -487,6 +487,7 @@ a:hover {
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+  overflow: hidden;
 }
 
 .pdf-export-slide.prose h1 {

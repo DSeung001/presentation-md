@@ -50,8 +50,34 @@ function renderScrollPage(html: string, fontStyle: CSSProperties): HTMLElement {
   return article
 }
 
+async function waitForImages(el: HTMLElement): Promise<void> {
+  const images = Array.from(el.querySelectorAll('img'))
+  await Promise.all(
+    images.map(async (img) => {
+      if (img.complete && img.naturalWidth > 0) {
+        try {
+          await img.decode()
+        } catch {
+          /* decode may fail for broken images; still capture */
+        }
+        return
+      }
+      await new Promise<void>((resolve) => {
+        img.addEventListener('load', () => resolve(), { once: true })
+        img.addEventListener('error', () => resolve(), { once: true })
+      })
+      try {
+        await img.decode()
+      } catch {
+        /* ignore */
+      }
+    }),
+  )
+}
+
 async function captureElement(el: HTMLElement): Promise<HTMLCanvasElement> {
   await document.fonts.ready
+  await waitForImages(el)
   await new Promise((r) => requestAnimationFrame(r))
   return html2canvas(el, {
     scale: 2,
