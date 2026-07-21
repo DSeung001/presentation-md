@@ -8,9 +8,11 @@ import {
   type RefObject,
 } from 'react'
 
-const MAX_SCALE = 3
+/** 슬라이드·PDF와 동일한 디자인 해상도 (16:9) */
+export const SLIDE_BASE = { w: 960, h: 540 } as const
 
-type Size = { w: number; h: number }
+const MAX_SCALE = 3
+const MIN_SCALE = 0.25
 
 function getPadding(stage: HTMLElement) {
   const style = getComputedStyle(stage)
@@ -20,63 +22,68 @@ function getPadding(stage: HTMLElement) {
   }
 }
 
+function getRowGap(stage: HTMLElement) {
+  const gap = getComputedStyle(stage).rowGap
+  return gap && gap !== 'normal' ? parseFloat(gap) || 0 : 0
+}
+
+/**
+ * 슬라이드를 고정 디자인 크기로 그린 뒤 가용 영역에 fit (축소·확대).
+ * `enabled`가 false면 스케일 없음 (스크롤 모드).
+ */
 export function useStageScale(
   stageRef: RefObject<HTMLElement | null>,
-  fullscreen: boolean,
+  enabled: boolean,
   reservedRef?: RefObject<HTMLElement | null>,
   contentRevision?: unknown,
 ) {
   const innerRef = useRef<HTMLDivElement>(null)
-  const baseSizeRef = useRef<Size | null>(null)
-  const [baseSize, setBaseSize] = useState<Size | null>(null)
   const [scale, setScale] = useState(1)
-
-  const captureBaseSize = useCallback(() => {
-    const stage = stageRef.current
-    if (!stage) return
-    const rect = stage.getBoundingClientRect()
-    baseSizeRef.current = { w: rect.width, h: rect.height }
-  }, [stageRef])
 
   const updateScale = useCallback(() => {
     const stage = stageRef.current
-    const base = baseSizeRef.current
-    if (!stage || !base || !fullscreen) {
+    if (!stage || !enabled) {
       setScale(1)
       return
     }
 
     const pad = getPadding(stage)
-    const reservedH = reservedRef?.current?.offsetHeight ?? 0
-    const availW = stage.clientWidth - pad.x
-    const availH = stage.clientHeight - pad.y - reservedH
-    const scaleW = availW / base.w
-    const scaleH = availH / base.h
-    // 슬라이드도 가로·세로 모두 맞춰야 상단 header가 잘리지 않는다.
-    const next = Math.min(scaleW, scaleH, MAX_SCALE)
-    setScale(next > 1 ? next : 1)
-  }, [stageRef, fullscreen, reservedRef])
-
-  useLayoutEffect(() => {
-    if (!fullscreen) {
-      baseSizeRef.current = null
-      setBaseSize(null)
-      setScale(1)
+    const reservedEl = reservedRef?.current
+    const reservedH = reservedEl
+      ? reservedEl.offsetHeight + getRowGap(stage)
+      : 0
+    const availW = Math.max(0, stage.clientWidth - pad.x)
+    const availH = Math.max(0, stage.clientHeight - pad.y - reservedH)
+    if (availW <= 0 || availH <= 0) {
+      setScale(MIN_SCALE)
       return
     }
 
-    if (baseSizeRef.current) {
-      setBaseSize({ ...baseSizeRef.current })
+    const scaleW = availW / SLIDE_BASE.w
+    const scaleH = availH / SLIDE_BASE.h
+    // 가로·세로 모두 맞춰야 header·본문이 잘리지 않는다.
+    const next = Math.min(scaleW, scaleH, MAX_SCALE)
+    if (!Number.isFinite(next) || next <= 0) {
+      setScale(MIN_SCALE)
+      return
+    }
+    setScale(next)
+  }, [stageRef, enabled, reservedRef])
+
+  useLayoutEffect(() => {
+    if (!enabled) {
+      setScale(1)
+      return
     }
     updateScale()
-  }, [fullscreen, updateScale])
+  }, [enabled, updateScale])
 
   useEffect(() => {
-    if (fullscreen) updateScale()
-  }, [contentRevision, fullscreen, updateScale])
+    if (enabled) updateScale()
+  }, [contentRevision, enabled, updateScale])
 
   useEffect(() => {
-    if (!fullscreen) return
+    if (!enabled) return
 
     const stage = stageRef.current
     if (!stage) return
@@ -90,25 +97,25 @@ export function useStageScale(
       ro.disconnect()
       window.removeEventListener('resize', updateScale)
     }
-  }, [fullscreen, stageRef, reservedRef, updateScale])
+  }, [enabled, stageRef, reservedRef, updateScale])
 
-  const scaling = fullscreen && baseSize != null && scale > 1
-
-  const hostStyle: CSSProperties = scaling
+  const hostStyle: CSSProperties = enabled
     ? {
-        width: baseSize.w * scale,
-        height: baseSize.h * scale,
+        width: SLIDE_BASE.w * scale,
+        height: SLIDE_BASE.h * scale,
+        flex: 'none',
+        overflow: 'hidden',
       }
     : {}
 
-  const innerStyle: CSSProperties = scaling
+  const innerStyle: CSSProperties = enabled
     ? {
-        width: baseSize.w,
-        height: baseSize.h,
+        width: SLIDE_BASE.w,
+        height: SLIDE_BASE.h,
         transform: `scale(${scale})`,
         transformOrigin: 'top left',
       }
     : {}
 
-  return { scale, captureBaseSize, innerRef, hostStyle, innerStyle }
+  return { scale, innerRef, hostStyle, innerStyle }
 }

@@ -29,17 +29,17 @@ export default function Viewer() {
   const navHintTimerRef = useRef<number | null>(null)
   const { active: fullscreen, toggle: toggleFullscreen } =
     useFullscreen(stageRef)
-  // 전체보기 네비는 absolute라 하단 padding으로만 여백을 확보한다.
-  const { captureBaseSize, innerRef, hostStyle, innerStyle } = useStageScale(
+  // 일반 뷰: nav가 flow에 있으므로 reserved로 제외. 전체보기는 absolute + padding.
+  const { innerRef, hostStyle, innerStyle } = useStageScale(
     stageRef,
-    fullscreen,
-    undefined,
+    mode === 'slides',
+    fullscreen ? undefined : slideNavRef,
     mode === 'slides' ? index : slug,
   )
 
   const onToggleFullscreen = useCallback(() => {
-    void toggleFullscreen(fullscreen ? undefined : captureBaseSize)
-  }, [fullscreen, captureBaseSize, toggleFullscreen])
+    void toggleFullscreen()
+  }, [toggleFullscreen])
 
   const activeDoc = viewDoc ?? doc
 
