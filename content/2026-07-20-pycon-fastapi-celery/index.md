@@ -191,12 +191,12 @@ API는 일을 적재하고 실제 실행은 Celery 워커가 담당.
 
 <header>환경 세팅</header>
 
-권장 실행은 Docker지만 Python으로도 실행 가능.<br/>
+권장 기동: Checkpoint 00~01은 `python scripts/dev.py api`, 02~04는 `python scripts/dev.py docker`.<br/>
 ※ Docker: 앱·의존성을 하나로 묶어서 내 PC 환경에서 분리된 곳에서 작업 세팅을 용이하게 해주고 공유도 간편함
 
 | 항목 | 용도 |
 | --- | --- |
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | API · Redis · worker 등 전체 환경 세팅|
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | 02~ 이후 Redis · worker 포함 Compose 기동 |
 | [Python 3.13](https://www.python.org/downloads/release/python-3130/) | `scripts/dev.py` 헬퍼 스크립트 실행, 설치 시 환경 변수 등록 체크 |
 | [Git](https://git-scm.com/install/windows) | clone · 체크포인트 이동 |
 
@@ -241,9 +241,12 @@ git --version
 개발 환경은 미리 세팅된 상태로 진행.<br/>
 막히면 해당 체크포인트 브랜치로 옮겨 이어서 실습.
 
-```cli {lines=3}
+```cli {lines=5}
 git clone https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git
 git fetch origin
+# 00~01 권장
+python scripts/dev.py api
+# 02~04 권장
 python scripts/dev.py docker
 ```
 
@@ -282,7 +285,7 @@ FastAPI 앱을 켜고 health·문서로 환경이 살아 있는지 확인한다.
 | 이전 | 현재 |
 | --- | --- |
 | (시작점) | FastAPI 앱 · `/api/health` · `/docs` |
-| | Docker Compose로 API 기동 |
+| | `dev.py api`로 로컬 기동 |
 
 ```mermaid
 flowchart LR
@@ -297,7 +300,7 @@ flowchart LR
 
 ### 실습
 
-- Docker로 FastAPI 앱 켜기
+- `python scripts/dev.py api`로 FastAPI 앱 켜기
 - `/api/health`와 `/docs` 확인
 
 성공 기준: `GET /api/health`가 `{"status":"ok"}`를 돌려줌
@@ -314,7 +317,6 @@ flowchart LR
 
 - `api/app/main.py`: 입력·출력 폴더 생성, 미디어 StaticFiles 마운트
 - `api/app/routes.py`: `POST /api/videos` 업로드·`job_id` 원본 저장
-- `docker-compose.yml`: 업로드용 데이터 볼륨·환경 변수
 - `static/index.html`, `static/style.css`: 업로드 UI
 
 ---
@@ -366,7 +368,6 @@ flowchart LR
 
 - `api/app/celery_client.py`: API용 Celery 클라이언트 (broker·backend)
 - `api/app/routes.py`: 업로드 직후 enqueue · `GET /api/jobs/{job_id}`
-- `docker-compose.yml`: Redis·worker 서비스 추가
 
 ---
 
@@ -413,6 +414,7 @@ flowchart LR
 
 ### 실습
 
+- 이 단계부터 `python scripts/dev.py docker`로 Redis·worker 포함 기동
 - 업로드 직후 작업을 대기열에 넣기
 - `GET /api/jobs/{job_id}`로 상태 확인
 - API는 인코딩이 끝날 때까지 기다리지 않음
@@ -431,7 +433,6 @@ flowchart LR
 
 - `api/app/routes.py`: `SUCCESS` 시 `hls_url` 응답
 - `static/index.html`, `static/style.css`: HLS URL·재생 준비 UI
-- `worker/app/config.py`: 입출력·소스 파일명 상수
 - `worker/app/tasks.py`: FFmpeg로 HLS 생성 · 실패 처리
 
 ---
