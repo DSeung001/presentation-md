@@ -20,7 +20,7 @@ export default function Viewer() {
   const doc = useMemo(() => getDoc(slug), [slug])
   const [viewDoc, setViewDoc] = useState<ParsedDoc | null>(null)
   const viewParam = searchParams.get('view')
-  const mode: ViewMode = viewParam === 'slides' ? 'slides' : 'scroll'
+  const mode: ViewMode = viewParam === 'scroll' ? 'scroll' : 'slides'
   const [index, setIndex] = useState(0)
   const [exporting, setExporting] = useState(false)
   const [navHint, setNavHint] = useState(false)
@@ -103,8 +103,8 @@ export default function Viewer() {
   const setMode = useCallback(
     (next: ViewMode) => {
       const params = new URLSearchParams(searchParams)
-      if (next === 'slides') {
-        params.set('view', 'slides')
+      if (next === 'scroll') {
+        params.set('view', 'scroll')
       } else {
         params.delete('view')
       }

@@ -78,22 +78,127 @@ flowchart LR
 
 <header>실습</header>
 
-### 체크포인트
+학습 편의를 위해 개발 환경은 세팅된 상태로 진행합니다.<br/>
+막힐 경우 필요에 따라 체크포인트 브랜치로 이동해 이어서 실습합니다.
 
-기본 세팅에서 API를 먼저 만들고, Celery 세팅으로 인코딩 결과물까지 이어갑니다.
-
-1. 기본 세팅
-   - `checkpoint/01-fastapi-upload`: FastAPI로 영상 업로드와 저장
-
-2. Celery 세팅 (결과물까지)
-   - `checkpoint/02-celery-redis`: Redis + Celery로 작업 enqueue와 상태 조회
-   - `checkpoint/03-ffmpeg-hls`: worker에서 FFmpeg로 HLS 결과 생성
-   - `checkpoint/04-hls-player`: polling과 재생으로 최종 결과 확인
+```cli
+git fetch origin
+git switch checkpoint/00-fastapi-setup
+python scripts/dev.py docker
+```
 
 ---
 
-<header>사이드 프로젝트 경험담</header>
+<header>FastAPI란</header>
+
+Python으로 HTTP API를 빠르게 만들기 위한 웹 프레임워크
+
+- 타입 힌트 기반으로 요청/응답을 검증
+- `uvicorn`으로 실행하는 ASGI 앱
+- `/docs`에서 Swagger UI를 자동 제공
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+```
 
 ---
 
-<header>Q&A</header>
+<header>FastAPI 구조</header>
+
+이번 튜토리얼에서 쓰는 최소 구성
+
+- `app = FastAPI(...)`: 앱 인스턴스
+- `APIRouter`: 경로를 파일 단위로 분리
+- `include_router(..., prefix="/api")`: `/api` 아래로 라우트 연결
+- `StaticFiles`: 튜토리얼 HTML/CSS 제공
+
+요청 처리 흐름: Client → uvicorn → FastAPI route → JSON 응답
+
+---
+
+<header>Checkpoint 00</header>
+
+### FastAPI 초기 세팅
+
+- Docker로 FastAPI 앱 기동
+- `/api/health`와 `/docs` 확인
+
+```cli
+git switch checkpoint/00-fastapi-setup
+```
+
+성공 기준: `GET /api/health`가 `{"status":"ok"}`를 반환함
+
+---
+
+<header>Checkpoint 01</header>
+
+### FastAPI 업로드
+
+- 영상 업로드 API 구현
+- `job_id` 디렉터리에 원본 저장
+
+```cli
+git switch checkpoint/01-fastapi-upload
+```
+
+성공 기준: `POST /api/videos` 응답에 `job_id`, `source_url`이 전달됨
+
+---
+
+<header>Checkpoint 02</header>
+
+### Celery + Redis
+
+- 업로드 직후 작업을 enqueue
+- `GET /api/jobs/{job_id}`로 상태 조회
+
+```cli
+git switch checkpoint/02-celery-redis
+```
+
+성공 기준: API는 바로 `202`를 주고, worker 로그에 작업 수신이 보임
+
+---
+
+<header>Checkpoint 03</header>
+
+### FFmpeg HLS
+
+- worker에서만 FFmpeg 실행
+- `playlist.m3u8`와 segment 생성
+
+```cli
+git switch checkpoint/03-ffmpeg-hls
+```
+
+성공 기준: `SUCCESS`일 때 `hls_url`이 내려옴
+
+---
+
+<header>Checkpoint 04</header>
+
+### HLS Player
+
+- 작업 상태 polling
+- 원본과 HLS 결과 나란히 재생
+
+```cli
+git switch checkpoint/04-hls-player
+```
+
+성공 기준: `SUCCESS` / `FAILURE`에서 polling이 멈추고 영상이 재생됨
+
+---
+
+<header>운영</header>
+
+---
+
+# Q&A
