@@ -36,7 +36,8 @@ content/
 - `fontKo` / `fontEn`: 한글·영어 글꼴을 각각 지정 (`font`보다 우선)
 - 프리셋: `default`, `serif`, `mono`, `display`, `gothic`
 - `---`: 슬라이드 모드에서 페이지 구분 (스크롤 모드에서는 구분선)
-- 코드 블록 크기: `` ```python {scale=sm} `` (`sm` / `md` / `lg`, 또는 `{scale=0.85}` 배율)
+- 코드 블록 크기: `` ```python {scale=sm} `` (`xs` / `sm` / `md` / `lg`, 또는 `{scale=0.85}` 배율)
+- 코드 위 파일 경로: `` ```python {scale=sm, path=api/app/main.py} `` (루트 기준 경로, 작게 표시)
 
 헤더 **글꼴** 메뉴에서 프리셋별 한·영 미리보기를 확인할 수 있습니다.
 

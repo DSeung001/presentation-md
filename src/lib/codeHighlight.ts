@@ -132,33 +132,47 @@ function fenceLangToken(info: string | undefined): string {
   return (info || '').match(/\S*/)?.[0] ?? ''
 }
 
-type FenceScale = {
+type FenceMeta = {
   className?: string
   style?: string
+  path?: string
 }
 
 /**
- * ```lang {scale=sm|md|lg|0.85}
- * sm/md/lg 프리셋 또는 양수 배율. md는 기본 크기와 동일해 생략한다.
+ * ```lang {scale=xs|sm|md|lg|0.85, path=api/app/main.py}
+ * xs/sm/md/lg 프리셋 또는 양수 배율. md는 기본 크기와 동일해 생략한다.
+ * path는 루트 기준 파일 경로 라벨.
  */
-function parseFenceScale(info: string | undefined): FenceScale {
+function parseFenceMeta(info: string | undefined): FenceMeta {
   if (!info) return {}
   const brace = info.match(/\{([^}]*)\}/)
   if (!brace) return {}
-  const scaleRaw = brace[1].match(/(?:^|[\s,])scale\s*=\s*([^\s,}]+)/i)?.[1]
-  if (!scaleRaw) return {}
+  const inner = brace[1]
+  const meta: FenceMeta = {}
 
-  const key = scaleRaw.toLowerCase()
-  if (key === 'md') return {}
-  if (key === 'sm' || key === 'lg') {
-    return { className: `code-scale-${key}` }
+  const scaleRaw = inner.match(/(?:^|[\s,])scale\s*=\s*([^\s,}]+)/i)?.[1]
+  if (scaleRaw) {
+    const key = scaleRaw.toLowerCase()
+    if (key === 'md') {
+      // default size
+    } else if (key === 'xs' || key === 'sm' || key === 'lg') {
+      meta.className = `code-scale-${key}`
+    } else {
+      const num = Number(key)
+      if (Number.isFinite(num) && num > 0 && num <= 3) {
+        meta.style = `font-size: ${num}em`
+      }
+    }
   }
 
-  const num = Number(key)
-  if (Number.isFinite(num) && num > 0 && num <= 3) {
-    return { style: `font-size: ${num}em` }
+  const pathQuoted = inner.match(/(?:^|[\s,])path\s*=\s*"([^"]+)"/i)?.[1]
+  const pathBare = inner.match(/(?:^|[\s,])path\s*=\s*([^\s,}]+)/i)?.[1]
+  const pathRaw = pathQuoted ?? pathBare
+  if (pathRaw) {
+    meta.path = pathRaw
   }
-  return {}
+
+  return meta
 }
 
 marked.use(
@@ -175,24 +189,29 @@ marked.use(
   }),
 )
 
-// marked-highlight 렌더러를 덮어 scale 클래스를 <pre>에 붙인다.
+// marked-highlight 렌더러를 덮어 scale / path를 붙인다.
 // Viewer(슬라이드/전체보기)와 PDF export가 같은 HTML을 쓰므로 한 경로로 충분하다.
 marked.use({
   renderer: {
     code({ text, lang, escaped }) {
       const language = fenceLangToken(lang)
-      const scale = parseFenceScale(lang)
+      const meta = parseFenceMeta(lang)
       const codeClass = language
         ? ` class="hljs language-${escapeHtml(language)}"`
         : ''
 
       const preAttrs: string[] = []
-      if (scale.className) preAttrs.push(`class="${scale.className}"`)
-      if (scale.style) preAttrs.push(`style="${scale.style}"`)
+      if (meta.className) preAttrs.push(`class="${meta.className}"`)
+      if (meta.style) preAttrs.push(`style="${meta.style}"`)
       const preOpen = preAttrs.length > 0 ? `<pre ${preAttrs.join(' ')}>` : '<pre>'
 
       const body = (escaped ? text : escapeHtml(text)).replace(/\n$/, '')
-      return `${preOpen}<code${codeClass}>${body}\n</code></pre>`
+      const preBlock = `${preOpen}<code${codeClass}>${body}\n</code></pre>`
+
+      if (!meta.path) return preBlock
+
+      const pathLabel = escapeHtml(meta.path)
+      return `<div class="code-with-path"><div class="code-path">${pathLabel}</div>${preBlock}</div>`
     },
   },
 })
