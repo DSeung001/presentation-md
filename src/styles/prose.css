@@ -110,6 +110,15 @@
   overflow-x: auto;
 }
 
+/* fence `{scale=sm|lg}` — 슬라이드·전체보기·PDF(.prose) 공통 */
+.prose pre.code-scale-sm {
+  font-size: 0.8em;
+}
+
+.prose pre.code-scale-lg {
+  font-size: 1.15em;
+}
+
 .prose pre code {
   background: transparent;
   padding: 0;

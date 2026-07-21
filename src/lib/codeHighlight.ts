@@ -127,6 +127,40 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;')
 }
 
+/** fence info에서 언어 토큰만 추출 (`python {scale=sm}` → `python`) */
+function fenceLangToken(info: string | undefined): string {
+  return (info || '').match(/\S*/)?.[0] ?? ''
+}
+
+type FenceScale = {
+  className?: string
+  style?: string
+}
+
+/**
+ * ```lang {scale=sm|md|lg|0.85}
+ * sm/md/lg 프리셋 또는 양수 배율. md는 기본 크기와 동일해 생략한다.
+ */
+function parseFenceScale(info: string | undefined): FenceScale {
+  if (!info) return {}
+  const brace = info.match(/\{([^}]*)\}/)
+  if (!brace) return {}
+  const scaleRaw = brace[1].match(/(?:^|[\s,])scale\s*=\s*([^\s,}]+)/i)?.[1]
+  if (!scaleRaw) return {}
+
+  const key = scaleRaw.toLowerCase()
+  if (key === 'md') return {}
+  if (key === 'sm' || key === 'lg') {
+    return { className: `code-scale-${key}` }
+  }
+
+  const num = Number(key)
+  if (Number.isFinite(num) && num > 0 && num <= 3) {
+    return { style: `font-size: ${num}em` }
+  }
+  return {}
+}
+
 marked.use(
   markedHighlight({
     async: false,
@@ -140,3 +174,25 @@ marked.use(
     },
   }),
 )
+
+// marked-highlight 렌더러를 덮어 scale 클래스를 <pre>에 붙인다.
+// Viewer(슬라이드/전체보기)와 PDF export가 같은 HTML을 쓰므로 한 경로로 충분하다.
+marked.use({
+  renderer: {
+    code({ text, lang, escaped }) {
+      const language = fenceLangToken(lang)
+      const scale = parseFenceScale(lang)
+      const codeClass = language
+        ? ` class="hljs language-${escapeHtml(language)}"`
+        : ''
+
+      const preAttrs: string[] = []
+      if (scale.className) preAttrs.push(`class="${scale.className}"`)
+      if (scale.style) preAttrs.push(`style="${scale.style}"`)
+      const preOpen = preAttrs.length > 0 ? `<pre ${preAttrs.join(' ')}>` : '<pre>'
+
+      const body = (escaped ? text : escapeHtml(text)).replace(/\n$/, '')
+      return `${preOpen}<code${codeClass}>${body}\n</code></pre>`
+    },
+  },
+})
