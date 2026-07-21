@@ -110,21 +110,26 @@
   overflow-x: auto;
 }
 
-/* fence `{path=...}` — 코드 위 루트 기준 경로 라벨 (작게 고정) */
+/* fence `{path=...}` — 코드 위 루트 기준 경로 라벨 (pre와 붙는 바) */
 .prose .code-with-path {
   margin: 0 0 1em;
 }
 
 .prose .code-with-path > pre {
+  margin-top: 0;
   margin-bottom: 0;
+  border-radius: 0 0 10px 10px;
 }
 
 .prose .code-path {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.72rem;
   line-height: 1.3;
-  color: var(--muted);
-  margin: 0 0 0.35em;
+  color: #d4cfc6;
+  background: #2a2723;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 10px 10px 0 0;
   word-break: break-all;
 }
 

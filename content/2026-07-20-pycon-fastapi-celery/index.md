@@ -236,7 +236,7 @@ git switch checkpoint/01-fastapi-upload
 
 ---
 
-<header>Checkpoint 01 · api/app/config.py</header>
+<header>Checkpoint 01 · api/app/config.py (1/2)</header>
 
 경로·업로드 한도·허용 확장자·미디어 URL 설정.
 
@@ -255,6 +255,15 @@ MB = 1024 * 1024
 CHUNK_SIZE = 4 * MB
 DEFAULT_MAX_UPLOAD_BYTES = 100 * MB
 MAX_UPLOAD_BYTES = int(
+```
+
+---
+
+<header>Checkpoint 01 · api/app/config.py (2/2)</header>
+
+api/app/config.py 이어서
+
+```python {scale=sm, path=api/app/config.py}
     os.getenv("MAX_UPLOAD_BYTES", str(DEFAULT_MAX_UPLOAD_BYTES))
 )
 
@@ -272,7 +281,7 @@ MEDIA_OUTPUTS_URL = "/media/outputs"
 
 ---
 
-<header>Checkpoint 01 · api/app/main.py</header>
+<header>Checkpoint 01 · api/app/main.py (1/2)</header>
 
 inputs/outputs 폴더 생성 후 `/media/*`로 파일 제공.
 
@@ -290,8 +299,16 @@ from app.routes import router as api_router
 
 # FastAPI 앱 인스턴스 생성
 app = FastAPI(title="Pycon 2026 Video Converter")
-
 # 라우터 등록
+```
+
+---
+
+<header>Checkpoint 01 · api/app/main.py (2/2)</header>
+
+api/app/main.py 이어서
+
+```python {scale=sm, path=api/app/main.py}
 app.include_router(api_router, prefix="/api")
 
 # 입력 및 출력 폴더 생성
@@ -308,7 +325,7 @@ app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 ---
 
-<header>Checkpoint 01 · api/app/routes.py</header>
+<header>Checkpoint 01 · api/app/routes.py (1/4)</header>
 
 `/health` 대신 `POST /api/videos`로 업로드·`job_id` 저장.
 
@@ -331,6 +348,15 @@ router = APIRouter()
 
 
 @router.post("/videos", status_code=201)
+```
+
+---
+
+<header>Checkpoint 01 · api/app/routes.py (2/4)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
 async def upload_video(file: UploadFile = File(...)):
     if not file.filename:
         raise HTTPException(400, "Missing file")
@@ -349,6 +375,15 @@ async def upload_video(file: UploadFile = File(...)):
         with dest.open("wb") as out:
             while chunk := await file.read(CHUNK_SIZE):
                 total += len(chunk)
+```
+
+---
+
+<header>Checkpoint 01 · api/app/routes.py (3/4)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
                 if total > MAX_UPLOAD_BYTES:
                     raise HTTPException(413, "Upload too large")
                 out.write(chunk)
@@ -367,12 +402,21 @@ async def upload_video(file: UploadFile = File(...)):
     return {
         "job_id": job_id,
         "source_url": source_url,
+```
+
+---
+
+<header>Checkpoint 01 · api/app/routes.py (4/4)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
     }
 ```
 
 ---
 
-<header>Checkpoint 01 · docker-compose.yml</header>
+<header>Checkpoint 01 · docker-compose.yml (1/2)</header>
 
 `DATA_ROOT` env와 `./data` 볼륨 연결.
 
@@ -391,6 +435,15 @@ services:
       DATA_ROOT: /data
       MAX_UPLOAD_BYTES: "104857600" # 100MB
       ALLOWED_EXTENSIONS: "mp4,mov,webm"
+```
+
+---
+
+<header>Checkpoint 01 · docker-compose.yml (2/2)</header>
+
+docker-compose.yml 이어서
+
+```yaml {scale=sm, path=docker-compose.yml}
 
     # 볼륨 마운트
     # 도커 컨테이너 안의 폴더와 내 PC의 폴더를 연결해 줘서 이 폴더를 영구적으로 보존할 수 있게 해줌
@@ -404,7 +457,7 @@ services:
 
 ---
 
-<header>Checkpoint 01 · scripts/dev.py</header>
+<header>Checkpoint 01 · scripts/dev.py (1/2)</header>
 
 로컬 실행용 `DATA_ROOT` 환경변수·`data/` 폴더 준비. (추가분)
 
@@ -423,6 +476,15 @@ def local_env() -> dict[str, str]:
 DATA_ROOT.mkdir(parents=True, exist_ok=True)
 
 # api() 실행 시:
+```
+
+---
+
+<header>Checkpoint 01 · scripts/dev.py (2/2)</header>
+
+scripts/dev.py 이어서
+
+```python {scale=sm, path=scripts/dev.py}
 env=local_env()
 ```
 
@@ -463,7 +525,7 @@ ENCODE_TASK = "encode_video"
 
 ---
 
-<header>Checkpoint 02 · api/app/celery_client.py</header>
+<header>Checkpoint 02 · api/app/celery_client.py (1/2)</header>
 
 API에서 Celery로 작업 넣기·상태 조회용 클라이언트.
 
@@ -482,6 +544,15 @@ celery = Celery(
 
 # Celery의 작업은 backend에서 다음으로 상태가 표시됨
 # 기본 값: PENDING / STARTED / RETRY / SUCCESS / FAILURE
+```
+
+---
+
+<header>Checkpoint 02 · api/app/celery_client.py (2/2)</header>
+
+api/app/celery_client.py 이어서
+
+```python {scale=sm, path=api/app/celery_client.py}
 celery.conf.update(
     task_track_started=True, # STARTED 상태로 시작
     task_serializer="json", # 작업 데이터를 JSON 직렬화 
@@ -494,7 +565,7 @@ celery.conf.update(
 
 ---
 
-<header>Checkpoint 02 · api/app/routes.py (1/2)</header>
+<header>Checkpoint 02 · api/app/routes.py (1/6)</header>
 
 `202` 반환, `send_task`로 enqueue, `GET /jobs/{job_id}` 추가.
 
@@ -517,6 +588,15 @@ from app.config import (
 from app.celery_client import celery
 
 router = APIRouter()
+```
+
+---
+
+<header>Checkpoint 02 · api/app/routes.py (2/6)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
 
 
 @router.post("/videos", status_code=202)
@@ -535,6 +615,15 @@ async def upload_video(file: UploadFile = File(...)):
 
     total = 0
     try:
+```
+
+---
+
+<header>Checkpoint 02 · api/app/routes.py (3/6)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
         with dest.open("wb") as out:
             while chunk := await file.read(CHUNK_SIZE):
                 total += len(chunk)
@@ -553,16 +642,16 @@ async def upload_video(file: UploadFile = File(...)):
         raise HTTPException(400, "Empty file")
 
     try:
-        celery.send_task(
 ```
 
 ---
 
-<header>Checkpoint 02 · api/app/routes.py (2/2)</header>
+<header>Checkpoint 02 · api/app/routes.py (4/6)</header>
 
 api/app/routes.py 이어서
 
 ```python {scale=xs, path=api/app/routes.py}
+        celery.send_task(
             ENCODE_TASK,
             args=[job_id, ext],
             task_id=job_id,
@@ -579,9 +668,16 @@ api/app/routes.py 이어서
         "status_url": f"/api/jobs/{job_id}",
         "source_url": source_url,
     }
-
-
 @router.get("/jobs/{job_id}")
+```
+
+---
+
+<header>Checkpoint 02 · api/app/routes.py (5/6)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
 def get_job(job_id: str):
     job_dir = INPUTS_DIR / job_id
     if not job_dir.exists():
@@ -600,6 +696,15 @@ def get_job(job_id: str):
         "job_id": job_id,
         "status": status,
         "source_url": source_url,
+```
+
+---
+
+<header>Checkpoint 02 · api/app/routes.py (6/6)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
     }
 
     if status == "FAILURE":
@@ -609,7 +714,7 @@ def get_job(job_id: str):
 
 ---
 
-<header>Checkpoint 02 · worker 뼈대</header>
+<header>Checkpoint 02 · worker/app/config.py</header>
 
 `config` / `requirements` / `Dockerfile` / stub `tasks` / `celery_app`.
 
@@ -624,9 +729,21 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 ENCODE_TASK = "encode_video"
 ```
 
+---
+
+<header>Checkpoint 02 · worker/requirements.txt</header>
+
+`worker/requirements.txt`
+
 ```text {scale=xs, path=worker/requirements.txt}
 celery[redis]>=5.3
 ```
+
+---
+
+<header>Checkpoint 02 · worker/Dockerfile</header>
+
+`worker/Dockerfile`
 
 ```dockerfile {scale=xs, path=worker/Dockerfile}
 FROM python:3.12-slim
@@ -635,6 +752,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 ```
+
+---
+
+<header>Checkpoint 02 · worker/app/tasks.py</header>
+
+`worker/app/tasks.py`
 
 ```python {scale=xs, path=worker/app/tasks.py}
 import logging
@@ -655,6 +778,12 @@ def encode_video(job_id: str, ext: str):
     return {"job_id": job_id, "stub": True}
 ```
 
+---
+
+<header>Checkpoint 02 · worker/app/celery_app.py (1/2)</header>
+
+`worker/app/celery_app.py`
+
 ```python {scale=xs, path=worker/app/celery_app.py}
 from celery import Celery
 from app.config import REDIS_URL
@@ -674,6 +803,15 @@ celery.conf.update(
     accept_content=["json"], # 허용 포멧
     timezone="Asia/Seoul", # 시간대
     enable_utc=False, # UTC 사용 여부
+```
+
+---
+
+<header>Checkpoint 02 · worker/app/celery_app.py (2/2)</header>
+
+worker/app/celery_app.py 이어서
+
+```python {scale=xs, path=worker/app/celery_app.py}
 )
 
 # import 에러 방지
@@ -695,7 +833,7 @@ celery[redis]>=5.3
 
 ---
 
-<header>Checkpoint 02 · docker-compose.yml</header>
+<header>Checkpoint 02 · docker-compose.yml (1/4)</header>
 
 Redis + API + worker. 공유 `./data` 볼륨.
 
@@ -718,6 +856,15 @@ services:
 
 
   # FastAPI 서비스
+```
+
+---
+
+<header>Checkpoint 02 · docker-compose.yml (2/4)</header>
+
+docker-compose.yml 이어서
+
+```yaml {scale=xs, path=docker-compose.yml}
   api:
     build: ./api # ./api/Dockerfile 빌드
     depends_on:
@@ -736,6 +883,15 @@ services:
     # 볼륨 마운트
     # 도커 컨테이너 안의 폴더와 내 PC의 폴더를 연결해 줘서 이 폴더를 영구적으로 보존할 수 있게 해줌
     volumes:
+```
+
+---
+
+<header>Checkpoint 02 · docker-compose.yml (3/4)</header>
+
+docker-compose.yml 이어서
+
+```yaml {scale=xs, path=docker-compose.yml}
       - ./data:/data
       - ./static:/app/static:ro
 
@@ -754,13 +910,22 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+```
+
+---
+
+<header>Checkpoint 02 · docker-compose.yml (4/4)</header>
+
+docker-compose.yml 이어서
+
+```yaml {scale=xs, path=docker-compose.yml}
     # 실행 파일 지정 및 로그 레벨 설정
     command: celery -A app.celery_app.celery worker --loglevel=info
 ```
 
 ---
 
-<header>Checkpoint 02 · scripts/dev.py</header>
+<header>Checkpoint 02 · scripts/dev.py (1/7)</header>
 
 `redis` / `worker` 명령과 로컬 `REDIS_URL` 지원.
 
@@ -783,6 +948,15 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 def run(command: list[str], *, env=None, cwd: Path | None = None) -> None:
     """subprocess로 명령어 실행"""
     print(f"\n> {' '.join(map(str, command))}")
+```
+
+---
+
+<header>Checkpoint 02 · scripts/dev.py (2/7)</header>
+
+scripts/dev.py 이어서
+
+```python {scale=xs, path=scripts/dev.py}
     subprocess.run(
         [str(arg) for arg in command],
         cwd=str(cwd or PROJECT_ROOT),
@@ -801,6 +975,15 @@ def local_env() -> dict[str, str]:
     return {
         **os.environ,
         "DATA_ROOT": str(DATA_ROOT),
+```
+
+---
+
+<header>Checkpoint 02 · scripts/dev.py (3/7)</header>
+
+scripts/dev.py 이어서
+
+```python {scale=xs, path=scripts/dev.py}
         "REDIS_URL": REDIS_URL,
     }
 
@@ -819,6 +1002,15 @@ def install() -> None:
 
 def redis() -> None:
     """로컬용 Redis만 Docker로 기동"""
+```
+
+---
+
+<header>Checkpoint 02 · scripts/dev.py (4/7)</header>
+
+scripts/dev.py 이어서
+
+```python {scale=xs, path=scripts/dev.py}
     run(["docker", "compose", "up", "-d", "redis"])
 
 
@@ -837,6 +1029,15 @@ def api() -> None:
         ],
         env=local_env(),
     )
+```
+
+---
+
+<header>Checkpoint 02 · scripts/dev.py (5/7)</header>
+
+scripts/dev.py 이어서
+
+```python {scale=xs, path=scripts/dev.py}
 
 
 def worker() -> None:
@@ -855,6 +1056,15 @@ def worker() -> None:
         env=local_env(),
         cwd=WORKER_DIR,
     )
+```
+
+---
+
+<header>Checkpoint 02 · scripts/dev.py (6/7)</header>
+
+scripts/dev.py 이어서
+
+```python {scale=xs, path=scripts/dev.py}
 
 
 def docker() -> None:
@@ -873,6 +1083,15 @@ def main() -> None:
 
     commands = {
         "install": install,
+```
+
+---
+
+<header>Checkpoint 02 · scripts/dev.py (7/7)</header>
+
+scripts/dev.py 이어서
+
+```python {scale=xs, path=scripts/dev.py}
         "redis": redis,
         "api": api,
         "worker": worker,
@@ -950,7 +1169,7 @@ COPY app ./app
 
 ---
 
-<header>Checkpoint 03 · worker/app/tasks.py</header>
+<header>Checkpoint 03 · worker/app/tasks.py (1/3)</header>
 
 워커에서만 FFmpeg 실행. `playlist.m3u8` 없으면 실패.
 
@@ -973,6 +1192,15 @@ def encode_video(job_id: str, ext: str):
     source = INPUTS_DIR / job_id / f"{SOURCE_BASENAME}.{ext}"
     out_dir = OUTPUTS_DIR / job_id
     playlist = out_dir / "playlist.m3u8"
+```
+
+---
+
+<header>Checkpoint 03 · worker/app/tasks.py (2/3)</header>
+
+worker/app/tasks.py 이어서
+
+```python {scale=xs, path=worker/app/tasks.py}
 
     if not source.is_file():
         raise FileNotFoundError(f"source missing: {source}")
@@ -991,6 +1219,15 @@ def encode_video(job_id: str, ext: str):
     ]
     
     try:
+```
+
+---
+
+<header>Checkpoint 03 · worker/app/tasks.py (3/3)</header>
+
+worker/app/tasks.py 이어서
+
+```python {scale=xs, path=worker/app/tasks.py}
         # ffmpeg 실행
         completed = subprocess.run(cmd, check=True, capture_output=True, text=True)
         if completed.stderr:
@@ -1012,7 +1249,7 @@ def encode_video(job_id: str, ext: str):
 
 ---
 
-<header>Checkpoint 03 · api/app/routes.py (1/2)</header>
+<header>Checkpoint 03 · api/app/routes.py (1/6)</header>
 
 `SUCCESS`일 때 `hls_url` 포함. (주석 포함 최종본)
 
@@ -1034,8 +1271,16 @@ from app.config import (
 )
 
 from app.celery_client import celery
-
 router = APIRouter()
+```
+
+---
+
+<header>Checkpoint 03 · api/app/routes.py (2/6)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
 
 # 202로 요청 수행 중임을 명시
 @router.post("/videos", status_code=202)
@@ -1054,6 +1299,15 @@ async def upload_video(file: UploadFile = File(...)):
     job_dir = INPUTS_DIR / job_id
     job_dir.mkdir(parents=True, exist_ok=True)
     dest = job_dir / f"{SOURCE_BASENAME}.{ext}"
+```
+
+---
+
+<header>Checkpoint 03 · api/app/routes.py (3/6)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
 
     # 파일 저장
     total = 0
@@ -1070,22 +1324,21 @@ async def upload_video(file: UploadFile = File(...)):
             dest.unlink()
         job_dir.rmdir()
         raise
-
     if total == 0:
         dest.unlink()
-        job_dir.rmdir()
-        raise HTTPException(400, "Empty file")
-
-    # Celery 작업 등록
 ```
 
 ---
 
-<header>Checkpoint 03 · api/app/routes.py (2/2)</header>
+<header>Checkpoint 03 · api/app/routes.py (4/6)</header>
 
 api/app/routes.py 이어서
 
 ```python {scale=xs, path=api/app/routes.py}
+        job_dir.rmdir()
+        raise HTTPException(400, "Empty file")
+
+    # Celery 작업 등록
     try: 
         celery.send_task(
             ENCODE_TASK,
@@ -1100,6 +1353,15 @@ api/app/routes.py 이어서
 
     source_url = f"{MEDIA_INPUTS_URL}/{job_id}/{SOURCE_BASENAME}.{ext}"
     # celery 작업만 등록하고 반환
+```
+
+---
+
+<header>Checkpoint 03 · api/app/routes.py (5/6)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
     return {
         "job_id": job_id,
         "status": "PENDING",        
@@ -1118,6 +1380,15 @@ def get_job(job_id: str):
     sources: list[Path] = list(job_dir.glob(f"{SOURCE_BASENAME}.*"))
     if not sources:
         raise HTTPException(404, "Unknown job")
+```
+
+---
+
+<header>Checkpoint 03 · api/app/routes.py (6/6)</header>
+
+api/app/routes.py 이어서
+
+```python {scale=xs, path=api/app/routes.py}
     ext = sources[0].suffix.lstrip(".")
     source_url = f"{MEDIA_INPUTS_URL}/{job_id}/{SOURCE_BASENAME}.{ext}"
 
