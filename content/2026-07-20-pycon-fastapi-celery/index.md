@@ -210,7 +210,7 @@ PowerShell을 **관리자**로 열고 실행.
 
 도커는 본래 리눅스(Linux) 커널 기반의 컨테이너 기술이기에 윈도우환경에서 도커를 구동하려면 가상으로 리눅스 환경을 만들어줘야 합니다, 이때 리눅스 가상 환경을 제공하는 것이 WSL 2 (Windows Subsystem for Linux 2) 
 
-```cli
+```cli {lines=5}
 wsl --install
 wsl --status
 wsl --version
@@ -226,7 +226,7 @@ wsl --update
 
 이제 다음 명령어가 정상적으로 실행되야함.
 
-```cli
+```cli {lines=4}
 docker --version
 docker compose version
 python --version
@@ -242,7 +242,7 @@ git --version
 개발 환경은 미리 세팅된 상태로 진행.<br/>
 막히면 해당 체크포인트 브랜치로 옮겨 이어서 실습.
 
-```cli
+```cli {lines=3}
 git clone https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git
 git fetch origin
 python scripts/dev.py docker
@@ -253,17 +253,53 @@ python scripts/dev.py docker
 
 ---
 
+<header>체크포인트 브랜치 이동</header>
+
+막힐 경우 브렌치를 이동해서 다시 테스트가 가능하며,
+우선 `checkpoint/00-fastapi-setup`로 진행됩니다.
+
+```cli {lines=11}
+# -c: 로컬 브랜치를 새로 만들고 그쪽으로 이동
+# 00 · FastAPI 초기 세팅 · /api/health · /docs
+git switch -c checkpoint/00-fastapi-setup origin/checkpoint/00-fastapi-setup
+# 01 · 업로드 · job_id 원본 저장
+git switch -c checkpoint/01-fastapi-upload origin/checkpoint/01-fastapi-upload
+# 02 · Redis enqueue · Celery worker · 상태 API
+git switch -c checkpoint/02-celery-redis origin/checkpoint/02-celery-redis
+# 03 · worker FFmpeg HLS · playlist.m3u8
+git switch -c checkpoint/03-ffmpeg-hls origin/checkpoint/03-ffmpeg-hls
+# 04 · HLS 플레이어 · 상태 polling
+git switch -c checkpoint/04-hls-player origin/checkpoint/04-hls-player
+```
+
+---
+
 <header>Checkpoint 00</header>
 
-### FastAPI 초기 세팅
+### 구성
+
+FastAPI 앱을 켜고 health·문서로 환경이 살아 있는지 확인한다.
+
+| 이전까지 | 이번에 추가 |
+| --- | --- |
+| (시작점) | FastAPI 앱 · `/api/health` · `/docs` |
+| | Docker Compose로 API 기동 |
+
+```mermaid
+flowchart LR
+    Browser["Browser"]
+    FastAPI["FastAPI"]
+    Browser -->|"health / docs"| FastAPI
+```
+
+---
+
+<header>Checkpoint 00</header>
+
+### 실습
 
 - Docker로 FastAPI 앱 켜기
 - `/api/health`와 `/docs` 확인
-
-```cli
-# -c: 로컬 브랜치를 새로 만들고 그쪽으로 이동
-git switch -c checkpoint/00-fastapi-setup origin/checkpoint/00-fastapi-setup
-```
 
 성공 기준: `GET /api/health`가 `{"status":"ok"}`를 돌려줌
 
@@ -271,16 +307,37 @@ git switch -c checkpoint/00-fastapi-setup origin/checkpoint/00-fastapi-setup
 
 <header>Checkpoint 01</header>
 
-### FastAPI 업로드
+### 구성
+
+업로드를 받아 `job_id`로 원본을 저장한다. (인코딩은 아직 없음)
+
+| 이전까지 | 이번에 추가 |
+| --- | --- |
+| FastAPI 기동 · health | `POST /api/videos` |
+| | `job_id` 폴더에 원본 저장 · `source_url` |
+
+볼 곳: `api/app/` 업로드·저장 경로
+
+```mermaid
+flowchart LR
+    Browser["Browser"]
+    FastAPI["FastAPI"]
+    Data["data/inputs"]
+    Browser -->|"업로드"| FastAPI
+    FastAPI -->|"원본 저장"| Data
+    FastAPI -->|"job_id"| Browser
+```
+
+---
+
+<header>Checkpoint 01</header>
+
+### 실습
 
 아직 인코딩은 없음. 업로드와 `job_id` 저장만 만듦.
 
 - 영상 업로드 API 만들기
 - `job_id` 폴더에 원본 저장
-
-```cli
-git switch -c checkpoint/01-fastapi-upload origin/checkpoint/01-fastapi-upload
-```
 
 성공 기준: `POST /api/videos` 응답에 `job_id`, `source_url`이 있음
 
@@ -288,15 +345,41 @@ git switch -c checkpoint/01-fastapi-upload origin/checkpoint/01-fastapi-upload
 
 <header>Checkpoint 02</header>
 
-### Celery + Redis
+### 구성
+
+인코딩을 HTTP 밖으로 빼고, 상태는 따로 조회한다.
+
+| 이전까지 | 이번에 추가 |
+| --- | --- |
+| 업로드 · 원본 저장 | Redis 대기열에 작업 넣기 |
+| | Celery worker 수신 · `GET /api/jobs/{job_id}` |
+
+볼 곳: enqueue 호출, worker task, 상태 API
+
+```mermaid
+flowchart LR
+    Browser["Browser"]
+    FastAPI["FastAPI"]
+    Redis["Redis"]
+    Celery["Celery 워커"]
+    Data["공유 저장소"]
+    Browser -->|"업로드"| FastAPI
+    FastAPI -->|"작업 넣기"| Redis
+    Redis -->|"가져가기"| Celery
+    FastAPI --> Data
+    Celery --> Data
+    Browser -->|"상태 조회"| FastAPI
+```
+
+---
+
+<header>Checkpoint 02</header>
+
+### 실습
 
 - 업로드 직후 작업을 대기열에 넣기
 - `GET /api/jobs/{job_id}`로 상태 확인
 - API는 인코딩이 끝날 때까지 기다리지 않음
-
-```cli
-git switch -c checkpoint/02-celery-redis origin/checkpoint/02-celery-redis
-```
 
 성공 기준: API는 바로 `202`를 주고, 워커 로그에 작업 수신이 보임
 
@@ -304,15 +387,43 @@ git switch -c checkpoint/02-celery-redis origin/checkpoint/02-celery-redis
 
 <header>Checkpoint 03</header>
 
-### FFmpeg HLS
+### 구성
+
+워커에서만 FFmpeg로 HLS를 만들고, 재생 목록이 있을 때만 성공으로 본다.
+
+| 이전까지 | 이번에 추가 |
+| --- | --- |
+| enqueue · 상태 API | worker에서 FFmpeg 실행 |
+| | `playlist.m3u8` · 조각 파일 · `hls_url` |
+
+볼 곳: worker 인코딩 task, SUCCESS 조건
+
+```mermaid
+flowchart LR
+    Browser["Browser"]
+    FastAPI["FastAPI"]
+    Redis["Redis"]
+    Celery["Celery 워커"]
+    FFmpeg["FFmpeg HLS"]
+    Data["공유 저장소"]
+    Browser -->|"업로드"| FastAPI
+    FastAPI -->|"작업 넣기"| Redis
+    Redis -->|"가져가기"| Celery
+    Celery --> FFmpeg
+    FFmpeg -->|"m3u8 + 조각"| Data
+    FastAPI --> Data
+    Browser -->|"상태 · hls_url"| FastAPI
+```
+
+---
+
+<header>Checkpoint 03</header>
+
+### 실습
 
 - **워커에서만** FFmpeg 실행
 - `playlist.m3u8`와 조각 파일 생성
 - 재생 목록이 있을 때만 `SUCCESS`
-
-```cli
-git switch -c checkpoint/03-ffmpeg-hls origin/checkpoint/03-ffmpeg-hls
-```
 
 성공 기준: `SUCCESS`일 때 `hls_url`이 내려옴
 
@@ -320,14 +431,42 @@ git switch -c checkpoint/03-ffmpeg-hls origin/checkpoint/03-ffmpeg-hls
 
 <header>Checkpoint 04</header>
 
-### HLS Player
+### 구성
+
+최종 완성본으로 HLS 플레이어를 추가함(퍼블리싱 파일은 깃허브 저장소의 static에서 가져오기)
+
+| 이전까지 | 이번에 추가 |
+| --- | --- |
+| HLS 인코딩 · `hls_url` | 제공 `static/` 플레이어 |
+| | 상태 polling · 원본/HLS 나란히 재생 |
+
+
+```mermaid
+flowchart LR
+    Browser["Browser / UI"]
+    FastAPI["FastAPI"]
+    Redis["Redis"]
+    Celery["Celery 워커"]
+    FFmpeg["FFmpeg HLS"]
+    Data["공유 저장소"]
+    Browser -->|"업로드"| FastAPI
+    FastAPI -->|"작업 넣기"| Redis
+    Redis -->|"가져가기"| Celery
+    Celery --> FFmpeg
+    FastAPI --> Data
+    Celery --> Data
+    Browser -->|"상태 polling"| FastAPI
+    Browser -->|"HLS 재생"| FastAPI
+```
+
+---
+
+<header>Checkpoint 04</header>
+
+### 실습
 
 - 작업 상태를 주기적으로 확인
 - 원본과 HLS 결과를 나란히 재생
-
-```cli
-git switch -c checkpoint/04-hls-player origin/checkpoint/04-hls-player
-```
 
 성공 기준: `SUCCESS` / `FAILURE`에서 상태 확인이 멈추고 영상이 재생됨
 

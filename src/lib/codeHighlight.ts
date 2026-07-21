@@ -139,15 +139,18 @@ type FenceMeta = {
 }
 
 /**
- * ```lang {scale=xs|sm|md|lg|0.85, path=api/app/main.py}
+ * ```lang {scale=xs|sm|md|lg|0.85, path=api/app/main.py, lines=8}
  * xs/sm/md/lg 프리셋 또는 양수 배율. md는 기본 크기와 동일해 생략한다.
  * path는 루트 기준 파일 경로 라벨.
+ * lines는 보이는 줄 수 상한(스크롤).
  */
 function parseFenceMeta(info: string | undefined): FenceMeta {
   if (!info) return {}
   const brace = info.match(/\{([^}]*)\}/)
   if (!brace) return {}
   const inner = brace[1]
+  const classes: string[] = []
+  const styles: string[] = []
   const meta: FenceMeta = {}
 
   const scaleRaw = inner.match(/(?:^|[\s,])scale\s*=\s*([^\s,}]+)/i)?.[1]
@@ -156,12 +159,21 @@ function parseFenceMeta(info: string | undefined): FenceMeta {
     if (key === 'md') {
       // default size
     } else if (key === 'xs' || key === 'sm' || key === 'lg') {
-      meta.className = `code-scale-${key}`
+      classes.push(`code-scale-${key}`)
     } else {
       const num = Number(key)
       if (Number.isFinite(num) && num > 0 && num <= 3) {
-        meta.style = `font-size: ${num}em`
+        styles.push(`font-size: ${num}em`)
       }
+    }
+  }
+
+  const linesRaw = inner.match(/(?:^|[\s,])lines\s*=\s*(\d+)/i)?.[1]
+  if (linesRaw) {
+    const lines = Number(linesRaw)
+    if (Number.isFinite(lines) && lines > 0 && lines <= 40) {
+      classes.push('code-lines-limited')
+      styles.push(`--code-lines: ${lines}`)
     }
   }
 
@@ -172,6 +184,8 @@ function parseFenceMeta(info: string | undefined): FenceMeta {
     meta.path = pathRaw
   }
 
+  if (classes.length) meta.className = classes.join(' ')
+  if (styles.length) meta.style = styles.join('; ')
   return meta
 }
 

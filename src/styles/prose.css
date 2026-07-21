@@ -110,6 +110,12 @@
   overflow-x: auto;
 }
 
+/* fence `{lines=N}` — 보이는 줄 수 상한 */
+.prose pre.code-lines-limited {
+  max-height: calc(var(--code-lines) * 1.45em + 2rem);
+  overflow-y: auto;
+}
+
 /* fence `{path=...}` — 코드 위 루트 기준 경로 라벨 (pre와 붙는 바) */
 .prose .code-with-path {
   margin: 0 0 1em;

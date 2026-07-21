@@ -416,6 +416,24 @@ a:hover {
   overflow: hidden;
 }
 
+/* 텍스트가 높이를 먼저 쓰고, 코드는 남는 공간만 */
+.slide-frame > .slide-body > :not(pre):not(.code-with-path) {
+  flex-shrink: 0;
+}
+
+.slide-frame > .slide-body > pre,
+.slide-frame > .slide-body > .code-with-path {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.slide-frame > .slide-body > .code-with-path > pre {
+  max-height: 100%;
+  overflow: auto;
+}
+
 .slide-nav {
   display: flex;
   align-items: center;
@@ -488,6 +506,23 @@ a:hover {
   justify-content: center;
   min-height: 0;
   overflow: hidden;
+}
+
+.pdf-export-slide > .slide-body > :not(pre):not(.code-with-path) {
+  flex-shrink: 0;
+}
+
+.pdf-export-slide > .slide-body > pre,
+.pdf-export-slide > .slide-body > .code-with-path {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.pdf-export-slide > .slide-body > .code-with-path > pre {
+  max-height: 100%;
+  overflow: auto;
 }
 
 .pdf-export-slide.prose h1 {
