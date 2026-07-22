@@ -245,7 +245,11 @@
 }
 
 .slide-frame.prose > header {
-  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  font-size: 1.55rem;
+  line-height: 1.25;
+  /* 한 줄 + padding-bottom — 슬라이드 넘겨도 본문 영역이 흔들리지 않음 */
+  height: calc(1.55rem * 1.25 + 0.75rem);
+  overflow: hidden;
 }
 
 .slide-frame > .slide-body > p:has(> img),

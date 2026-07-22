@@ -572,7 +572,10 @@ a:hover {
 }
 
 .pdf-export-slide.prose > header {
-  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  font-size: 1.55rem;
+  line-height: 1.25;
+  height: calc(1.55rem * 1.25 + 0.75rem);
+  overflow: hidden;
 }
 
 .pdf-export-scroll {
