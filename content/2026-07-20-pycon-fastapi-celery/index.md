@@ -241,8 +241,9 @@ git --version
 개발 환경은 미리 세팅된 상태로 진행.<br/>
 막히면 해당 체크포인트 브랜치로 옮겨 이어서 실습.
 
-```cli {lines=6}
+```cli {lines=7}
 git clone https://github.com/DSeung001/pycon-2026-fastapi-celery-tutorial.git
+cd pycon-2026-fastapi-celery-tutorial
 git fetch origin
 # 00~01 권장
 python scripts/dev.py api
