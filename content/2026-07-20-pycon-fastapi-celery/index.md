@@ -192,6 +192,7 @@ API는 일을 적재하고 실제 실행은 Celery 워커가 담당.
 <header>환경 세팅</header>
 
 권장 기동: Checkpoint 00,01은 `python scripts/dev.py api`, 02,04는 `python scripts/dev.py docker`.<br/>
+※ macOS(맥북): `python` 대신 `python3`로 실행 (`python3 scripts/dev.py api`)<br/>
 ※ Docker: 앱·의존성을 하나로 묶어서 내 PC 환경에서 분리된 곳에서 작업 세팅을 용이하게 해주고 공유도 간편함
 
 | 항목 | 용도 |
