@@ -300,7 +300,7 @@ flowchart LR
 
 <header>Checkpoint 00</header>
 
-### 실습
+### 이번 Checkpoint 진행 사항
 
 - `python scripts/dev.py api`로 FastAPI 앱 켜기
 - `/api/health`와 `/docs` 확인
@@ -349,7 +349,7 @@ flowchart LR
 
 <header>Checkpoint 01</header>
 
-### 실습
+### 이번 Checkpoint 진행 사항
 
 아직 인코딩은 없음. 업로드와 `job_id` 저장만 만듦.
 
@@ -414,7 +414,7 @@ flowchart LR
 
 <header>Checkpoint 02</header>
 
-### 실습
+### 이번 Checkpoint 진행 사항
 
 - 이 단계부터 `python scripts/dev.py docker`로 Redis·worker 포함 기동
 - 업로드 직후 작업을 대기열에 넣기
@@ -484,7 +484,7 @@ flowchart LR
 
 <header>Checkpoint 03</header>
 
-### 실습
+### 이번 Checkpoint 진행 사항
 
 - **워커에서만** FFmpeg 실행
 - `playlist.m3u8`과 조각 파일 생성
@@ -543,7 +543,7 @@ flowchart LR
 
 <header>Checkpoint 04</header>
 
-### 실습
+### 이번 Checkpoint 진행 사항
 
 - 작업 상태를 주기적으로 확인
 - 원본과 HLS 결과를 나란히 재생
