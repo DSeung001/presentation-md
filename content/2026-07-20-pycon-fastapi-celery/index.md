@@ -320,6 +320,7 @@ flowchart LR
 - `api/app/main.py`: 입력·출력 폴더 생성, 미디어 StaticFiles 마운트
 - `api/app/routes.py`: `POST /api/videos` 업로드·`job_id` 원본 저장
 - `static/index.html`, `static/style.css`: 업로드 UI
+- [샘플 영상](https://drive.google.com/file/d/1Js4zYktRP2mXr1w75h8ykSHYtBFfXxGw/view?usp=sharing)  
 
 ---
 
@@ -355,7 +356,6 @@ flowchart LR
 
 - 영상 업로드 API 만들기
 - `job_id` 폴더에 원본 저장
-- [샘플 영상](https://drive.google.com/file/d/1Js4zYktRP2mXr1w75h8ykSHYtBFfXxGw/view?usp=sharing) 
 
 성공 기준: `POST /api/videos` 응답에 `job_id`, `source_url`이 있음
 
@@ -507,6 +507,7 @@ flowchart LR
 
 - `static/index.html`: 상태 polling · 원본/HLS 나란히 재생
 - `static/style.css`: 플레이어 레이아웃 스타일
+- [파이콘 영상](https://drive.google.com/file/d/1_pKRCajIkPE8cv2QZLbLzBSi1kD1VZIv/view?usp=sharing)
 
 ---
 
