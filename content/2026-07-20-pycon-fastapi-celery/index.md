@@ -328,7 +328,6 @@ flowchart LR
 ### 구성
 
 `api/app/`에 업로드가 되고 `job_id`로 원본 영상이 저장됨. (인코딩은 아직 없음)
-- [샘플 영상](https://drive.google.com/file/d/1Js4zYktRP2mXr1w75h8ykSHYtBFfXxGw/view?usp=sharing)
 
 | 이전 | 현재 |
 | --- | --- |
@@ -356,6 +355,7 @@ flowchart LR
 
 - 영상 업로드 API 만들기
 - `job_id` 폴더에 원본 저장
+- [샘플 영상](https://drive.google.com/file/d/1Js4zYktRP2mXr1w75h8ykSHYtBFfXxGw/view?usp=sharing) 
 
 성공 기준: `POST /api/videos` 응답에 `job_id`, `source_url`이 있음
 
