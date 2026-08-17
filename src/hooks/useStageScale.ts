@@ -11,7 +11,6 @@ import {
 /** 슬라이드·PDF와 동일한 디자인 해상도 (16:9) */
 export const SLIDE_BASE = { w: 960, h: 540 } as const
 
-const MAX_SCALE = 3
 const MIN_SCALE = 0.25
 
 function getPadding(stage: HTMLElement) {
@@ -62,7 +61,7 @@ export function useStageScale(
     const scaleW = availW / SLIDE_BASE.w
     const scaleH = availH / SLIDE_BASE.h
     // 가로·세로 모두 맞춰야 header·본문이 잘리지 않는다.
-    const next = Math.min(scaleW, scaleH, MAX_SCALE)
+    const next = Math.min(scaleW, scaleH)
     if (!Number.isFinite(next) || next <= 0) {
       setScale(MIN_SCALE)
       return

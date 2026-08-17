@@ -499,7 +499,8 @@ a:hover {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  width: min(960px, 100%);
+  width: 100%;
+  max-width: none;
   padding-bottom: 1.25rem;
 }
 
