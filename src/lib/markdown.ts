@@ -30,7 +30,7 @@ export type ParsedDoc = {
   slideHtmls: string[]
 }
 
-const SLIDE_SPLIT = /\n---\n/
+const SLIDE_SPLIT = /\r?\n---\r?\n/
 
 const assets = import.meta.glob(
   '../../content/**/*.{avif,gif,jpeg,jpg,png,svg,webp}',
