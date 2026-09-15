@@ -137,6 +137,15 @@ function resolveImageSources(html: string, slug: string): string {
     if (media && list) row.replaceChildren(media, list)
   }
 
+  for (const stack of template.content.querySelectorAll('.stack-below')) {
+    for (const p of Array.from(stack.querySelectorAll(':scope > p'))) {
+      const media = p.querySelector(':scope > img, :scope > .img-slot')
+      if (media && p.childElementCount === 1 && !p.textContent?.trim()) {
+        p.replaceWith(media)
+      }
+    }
+  }
+
   return template.innerHTML
 }
 

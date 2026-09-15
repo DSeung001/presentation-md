@@ -292,7 +292,9 @@
 .slide-frame > .slide-body > .img-grid,
 .pdf-export-slide > .slide-body > .img-grid,
 .slide-frame > .slide-body > .split-row,
-.pdf-export-slide > .slide-body > .split-row {
+.pdf-export-slide > .slide-body > .split-row,
+.slide-frame > .slide-body > .stack-below,
+.pdf-export-slide > .slide-body > .stack-below {
   flex: 1 1 auto;
   min-height: 0;
   margin: 0;
@@ -314,16 +316,37 @@
   align-items: center;
 }
 
+.prose .stack-below {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0.5rem;
+}
+
 .prose .img-grid > p,
 .prose .img-grid > img,
 .prose .img-grid > .img-slot,
 .prose .split-row > img,
 .prose .split-row > .img-slot,
 .prose .split-row > ol,
-.prose .split-row > ul {
+.prose .split-row > ul,
+.prose .stack-below > img,
+.prose .stack-below > .img-slot {
   margin: 0;
   min-width: 0;
   min-height: 0;
+}
+
+.prose .stack-below > :not(img):not(.img-slot):not(p:has(> img)) {
+  flex-shrink: 0;
+}
+
+.prose .stack-below > img,
+.prose .stack-below > .img-slot,
+.prose .stack-below > p:has(> img) {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .prose .split-row > ol,
@@ -332,13 +355,15 @@
 }
 
 .scroll-view .img-grid,
-.scroll-view .split-row {
+.scroll-view .split-row,
+.scroll-view .stack-below {
   width: 100%;
   margin: 1rem 0 0;
 }
 
 .scroll-view .img-grid img,
-.scroll-view .split-row img {
+.scroll-view .split-row img,
+.scroll-view .stack-below img {
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -357,7 +382,9 @@
 .slide-frame .img-grid > img,
 .pdf-export-slide .img-grid > img,
 .slide-frame .split-row > img,
-.pdf-export-slide .split-row > img {
+.pdf-export-slide .split-row > img,
+.slide-frame .stack-below > img,
+.pdf-export-slide .stack-below > img {
   width: 100%;
   height: 100%;
   object-fit: contain;

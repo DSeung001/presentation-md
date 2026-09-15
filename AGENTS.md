@@ -40,6 +40,11 @@ fontEn: default
 
 - 슬라이드 구분: 본문 단독 줄 `---` (스크롤 모드에서는 구분선)
 - 상단 제목: `<header>제목</header>`
+- 레이아웃 클래스 (`<div class="…">`로 감싼다)
+  - `img-grid` — 이미지 2열
+  - `split-row` — 이미지 + 리스트 좌우
+  - `stack-below` — 텍스트 위, 가로로 긴 이미지 아래(남은 높이만)
+- `img-slot` — 상대 경로 이미지가 없을 때 엔진이 넣는 자리표시 (작성자가 직접 쓰지 않음)
 - 코드: `` ```python {scale=sm, path=api/app/main.py, lines=8} ``
   - `scale`: `xs` | `sm` | `md` | `lg` (줄수 상한 xs≤18, sm≤14, md≤12, lg≤9)
   - 상한 초과 시 `(1/N)` 슬라이드로 분할

@@ -37,6 +37,26 @@ fontEn: gothic
 본문…
 ```
 
+## 레이아웃 클래스
+
+`<div class="…">`로 본문을 감싼다.
+
+- `img-grid` — 이미지 2열
+- `split-row` — 이미지 + 리스트 좌우
+- `stack-below` — 텍스트 위, 가로로 긴 이미지 아래(남은 높이만 `object-fit: contain`)
+
+```md
+<div class="stack-below">
+
+리드와 불릿
+
+![와이드](./image/wide.png)
+
+</div>
+```
+
+`img-slot`은 상대 경로 이미지가 없을 때 엔진이 넣는 자리표시다. 작성자가 직접 쓰지 않는다.
+
 ## 코드 fence 메타
 
 언어 뒤에 `{…}`로 옵션을 붙인다. 콤마로 여러 개 가능.
