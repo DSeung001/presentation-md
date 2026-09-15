@@ -11,7 +11,7 @@ fontEn: default
 
 ---
 
-<header>해결할 불편함</header>
+<header>불편함</header>
 
 수집이 늘수록 남는 건 목록이 아니라 **재배치 비용**입니다.
 
@@ -23,7 +23,7 @@ fontEn: default
 
 ---
 
-<header>해결할 불편함</header>
+<header>불편함</header>
 
 목록을 적는 앱과 개별 3D 모델만으로는 **내 공간** 문제가 풀리지 않습니다.
 

@@ -1,29 +1,83 @@
 # presentation-md
 
-Markdown으로 발표/문서를 쓰고, 웹에서 스크롤 또는 슬라이드로 보는 프로젝트다.
+Markdown으로 발표/문서를 쓰고, 웹에서 **스크롤** 또는 **슬라이드**로 보는 MVP다.
+Git으로 버전 관리하고, GitHub Pages에 배포한다.
 
-## 문서 위치
+- 사이트: https://dseung001.github.io/presentation-md/
+- 사람용 안내: `README.md`
 
-- 본문: `content/<slug>/index.md`
-- 에셋: 같은 폴더에 두고 `./image.webp`로 참조
-- URL slug = 폴더 이름
+## content/ — 문서 위치
 
-## 에이전트 규칙
+새 발표는 여기만 추가하면 된다.
 
-`content/**/*.md`를 편집할 때는 Cursor rule **presentation-markdown**을 따른다.
+```text
+content/<slug>/
+├── index.md      ← 본문 (필수)
+└── image.webp    ← 이미지·에셋 (선택)
+```
 
-요약:
+- 폴더 이름 = URL slug → `/p/<slug>`
+- 이미지는 같은 폴더에 두고 `./image.webp`로 참조
 
-- 슬라이드 구분: 본문의 `---`
-- 상단 제목: `<header>…</header>`
-- 코드 크기: `` ```lang {scale=xs|sm|md|lg, lines=8} `` — **줄수 상한**: xs≤18, sm≤14, md≤12, lg≤9; `lines=`로 표시 높이 고정 (상세는 presentation-markdown 룰)
-- 파일 경로 라벨: `` ```lang {scale=sm, path=api/app/main.py} ``
-- CLI: `` ```cli `` / 다이어그램: `` ```mermaid ``
-- 상한 초과 코드는 `(1/N)` 슬라이드로 분할한다.
-구현 위치:
+## content/ — 작성법
 
+`content/**/*.md` 편집 시 Cursor rule **presentation-markdown**을 따른다.
+
+### Frontmatter
+
+```yaml
+---
+title: 문서 제목
+date: 2026-09-14
+fontKo: default
+fontEn: default
+---
+```
+
+- `font` 또는 `fontKo` / `fontEn`: `default` | `serif` | `mono` | `display` | `gothic`
+
+### 본문
+
+- 슬라이드 구분: 본문 단독 줄 `---` (스크롤 모드에서는 구분선)
+- 상단 제목: `<header>제목</header>`
+- 코드: `` ```python {scale=sm, path=api/app/main.py, lines=8} ``
+  - `scale`: `xs` | `sm` | `md` | `lg` (줄수 상한 xs≤18, sm≤14, md≤12, lg≤9)
+  - 상한 초과 시 `(1/N)` 슬라이드로 분할
+- CLI: `` ```cli `` · 다이어그램: `` ```mermaid ``
+
+### 최소 예시
+
+```md
+---
+title: 예시 발표
+date: 2026-09-14
+---
+
+# 예시 발표
+
+한 줄 소개
+
+---
+
+<header>첫 슬라이드</header>
+
+- 요점 하나
+- 요점 둘
+
+![다이어그램](./diagram.webp)
+```
+
+## 실행
+
+```bash
+npm install
+npm run dev
+```
+
+→ `http://localhost:5173/presentation-md/`
+
+## 구현 위치 (코드 수정 시)
+
+- Markdown 파싱·슬라이드 분할: `src/lib/markdown.ts`
 - fence 파싱·하이라이트: `src/lib/codeHighlight.ts`
 - 경로/스케일 CSS: `src/styles/prose.css`
-- Markdown 파싱·슬라이드 분할: `src/lib/markdown.ts`
-
-사람용 안내: `README.md`
