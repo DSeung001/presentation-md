@@ -184,9 +184,13 @@ a:hover {
 }
 
 .viewer-title {
-  font-family: var(--font-display);
+  font-family: var(--font-ko-heading);
   font-size: 1.35rem;
   margin: 0;
+}
+
+.viewer-title .text-en {
+  font-family: var(--font-en-heading);
 }
 
 .viewer-date {
@@ -438,7 +442,7 @@ a:hover {
 }
 
 /* 텍스트가 높이를 먼저 쓰고, 코드는 남는 공간만 (이미지·mermaid는 제외) */
-.slide-frame > .slide-body > :not(pre):not(.code-with-path):not(p:has(> img)):not(.mermaid) {
+.slide-frame > .slide-body > :not(pre):not(.code-with-path):not(p:has(> img)):not(.img-slot):not(.mermaid) {
   flex-shrink: 0;
 }
 
@@ -547,7 +551,7 @@ a:hover {
   overflow: hidden;
 }
 
-.pdf-export-slide > .slide-body > :not(pre):not(.code-with-path):not(p:has(> img)):not(.mermaid) {
+.pdf-export-slide > .slide-body > :not(pre):not(.code-with-path):not(p:has(> img)):not(.img-slot):not(.mermaid) {
   flex-shrink: 0;
 }
 

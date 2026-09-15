@@ -102,6 +102,27 @@ function resolveImageSources(html: string, slug: string): string {
     const assetUrl = assets[`../../content${pathname}`]
     if (assetUrl) {
       image.setAttribute('src', `${assetUrl}${url.search}${url.hash}`)
+      continue
+    }
+
+    const slot = document.createElement('figure')
+    slot.className = 'img-slot'
+    slot.textContent = image.getAttribute('alt')?.trim() || '이미지'
+    const parent = image.parentElement
+    image.replaceWith(slot)
+    if (
+      parent
+      && parent.tagName === 'P'
+      && parent.childElementCount === 1
+      && parent.firstElementChild === slot
+    ) {
+      parent.replaceWith(slot)
+    }
+  }
+
+  for (const empty of template.content.querySelectorAll('p')) {
+    if (!empty.textContent?.trim() && empty.childElementCount === 0) {
+      empty.remove()
     }
   }
 

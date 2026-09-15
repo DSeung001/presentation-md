@@ -236,6 +236,28 @@
   margin-inline: auto;
 }
 
+.prose .img-slot {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem 1.25rem;
+  border: 1px dashed var(--muted);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.scroll-view .img-slot {
+  min-height: 12rem;
+  width: 80%;
+  max-width: 80%;
+  margin: 1rem auto;
+}
+
 .slide-frame.prose h1 {
   font-size: clamp(1.8rem, 4vw, 2.4rem);
 }
@@ -255,7 +277,9 @@
 .slide-frame > .slide-body > p:has(> img),
 .slide-frame > p:has(> img),
 .pdf-export-slide > .slide-body > p:has(> img),
-.pdf-export-slide > p:has(> img) {
+.pdf-export-slide > p:has(> img),
+.slide-frame > .slide-body > .img-slot,
+.pdf-export-slide > .slide-body > .img-slot {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;

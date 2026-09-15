@@ -11,6 +11,7 @@ import {
   type ParsedDoc,
 } from '../lib/markdown'
 import { hydrateDocMermaid } from '../lib/renderMermaid'
+import { wrapLatin } from '../lib/wrapLatin'
 
 type ViewMode = 'scroll' | 'slides'
 
@@ -46,6 +47,13 @@ export default function Viewer() {
   const fontStyle = useMemo((): CSSProperties | undefined => {
     if (!doc) return undefined
     return fontStacksToStyle(getDocFontStacks(doc)) as CSSProperties
+  }, [doc])
+
+  const titleHtml = useMemo(() => {
+    if (!doc) return ''
+    const span = document.createElement('span')
+    span.textContent = doc.title
+    return wrapLatin(span.outerHTML)
   }, [doc])
 
   useEffect(() => {
@@ -196,8 +204,11 @@ export default function Viewer() {
         <Link to="/" className="back-link">
           ← 목록
         </Link>
-        <div className="viewer-heading">
-          <h1 className="viewer-title">{doc.title}</h1>
+        <div className="viewer-heading" style={fontStyle}>
+          <h1
+            className="viewer-title"
+            dangerouslySetInnerHTML={{ __html: titleHtml }}
+          />
           {doc.date ? (
             <time className="viewer-date" dateTime={doc.date}>
               {formatDocDate(doc.date)}
