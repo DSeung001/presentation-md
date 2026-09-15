@@ -126,6 +126,17 @@ function resolveImageSources(html: string, slug: string): string {
     }
   }
 
+  for (const grid of template.content.querySelectorAll('.img-grid')) {
+    const items = Array.from(grid.querySelectorAll('img, .img-slot'))
+    if (items.length > 0) grid.replaceChildren(...items)
+  }
+
+  for (const row of template.content.querySelectorAll('.split-row')) {
+    const media = row.querySelector('img, .img-slot')
+    const list = row.querySelector('ol, ul')
+    if (media && list) row.replaceChildren(media, list)
+  }
+
   return template.innerHTML
 }
 
@@ -150,7 +161,10 @@ function wrapSlideHeader(html: string): string {
 
 function renderMarkdown(md: string, slug: string): string {
   const raw = marked.parse(md, { async: false }) as string
-  const safe = DOMPurify.sanitize(raw, { ADD_TAGS: ['header'] })
+  const safe = DOMPurify.sanitize(raw, {
+    ADD_TAGS: ['header'],
+    ADD_ATTR: ['class'],
+  })
   return wrapLatin(wrapSlideHeader(resolveImageSources(safe, slug)))
 }
 

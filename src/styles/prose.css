@@ -289,6 +289,62 @@
   overflow: hidden;
 }
 
+.slide-frame > .slide-body > .img-grid,
+.pdf-export-slide > .slide-body > .img-grid,
+.slide-frame > .slide-body > .split-row,
+.pdf-export-slide > .slide-body > .split-row {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.prose .img-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.prose .split-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.prose .img-grid > p,
+.prose .img-grid > img,
+.prose .img-grid > .img-slot,
+.prose .split-row > img,
+.prose .split-row > .img-slot,
+.prose .split-row > ol,
+.prose .split-row > ul {
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.prose .split-row > ol,
+.prose .split-row > ul {
+  padding-left: 1.25em;
+}
+
+.scroll-view .img-grid,
+.scroll-view .split-row {
+  width: 100%;
+  margin: 1rem 0 0;
+}
+
+.scroll-view .img-grid img,
+.scroll-view .split-row img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+}
+
 .slide-frame img,
 .pdf-export-slide img {
   max-width: 100%;
@@ -296,6 +352,16 @@
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.slide-frame .img-grid > img,
+.pdf-export-slide .img-grid > img,
+.slide-frame .split-row > img,
+.pdf-export-slide .split-row > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .slide-frame .mermaid svg,
