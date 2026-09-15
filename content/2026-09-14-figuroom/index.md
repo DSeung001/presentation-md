@@ -105,3 +105,12 @@ fontEn: gothic
 ![이커머스](./image/e-commerce.png)
 
 </div>
+
+---
+
+<header>끝</header>
+
+FiguRoom을 더 자세히 보거나, 설문에 참여해 주세요.
+
+- [랜딩 페이지](https://figuroom.devseung.com/)
+- [피규어 수집·배치 경험 설문](https://forms.gle/z9e3J53oL5MZHGXb7)
